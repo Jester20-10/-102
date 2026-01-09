@@ -833,6 +833,794 @@
 </body>
 </html>
 
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .auth-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .activists-list {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .section-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            color: var(--primary-dark);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .filter-input, .filter-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .activist-card {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        
+        .activist-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .registration-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .activist-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .activist-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        
+        .activist-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+        }
+        
+        .registered {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .not-registered {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            height: fit-content;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        
+        .submit-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .login-form {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        
+        .login-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-dark);
+            font-size: 24px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--danger);
+        }
+        
+        .modal-message {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .cancel-btn {
+            background: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .confirm-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="container">
+            <div class="login-form">
+                <h2 class="login-title">Вход для редакторов</h2>
+                <div id="login-message" class="message hidden"></div>
+                <div class="form-group">
+                    <label for="username" class="form-label">Логин</label>
+                    <select id="username" class="form-select">
+                        <option value="">Выберите аккаунт</option>
+                        <option value="predsedatel">Председатель совета обучающихся</option>
+                        <option value="sovetnik">Советник директора</option>
+                        <option value="sekretar">Секретарь</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Пароль</label>
+                    <input type="password" id="password" class="form-input" placeholder="Введите пароль">
+                </div>
+                <button id="login-btn" class="submit-btn">Войти</button>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="container hidden">
+            <header>
+                <div class="header-content">
+                    <div class="logo">Активисты Школы</div>
+                    <div class="auth-section">
+                        <div class="user-info">
+                            <span id="current-user">Пользователь</span>
+                        </div>
+                        <button id="logout-btn" class="logout-btn">Выйти</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="activists-list">
+                    <h2 class="section-title">Список активистов</h2>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label for="search-input" class="filter-label">Поиск</label>
+                            <input type="text" id="search-input" class="filter-input" placeholder="Поиск по всем полям...">
+                        </div>
+                        <div class="filter-group">
+                            <label for="sort-by" class="filter-label">Сортировать по</label>
+                            <select id="sort-by" class="filter-select">
+                                <option value="name">Имени</option>
+                                <option value="class">Классу</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="activists-container">
+                        <!-- Activists will be rendered here -->
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Добавить активиста</h2>
+                    <div id="form-message" class="message hidden"></div>
+                    <form id="activist-form">
+                        <div class="form-group">
+                            <label for="first-name" class="form-label">Имя *</label>
+                            <input type="text" id="first-name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name" class="form-label">Фамилия *</label>
+                            <input type="text" id="last-name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="middle-name" class="form-label">Отчество</label>
+                            <input type="text" id="middle-name" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="class" class="form-label">Класс *</label>
+                            <select id="class" class="form-select" required>
+                                <option value="">Выберите класс</option>
+                                <!-- 5 классы -->
+                                <option value="5А">5А</option>
+                                <option value="5Б">5Б</option>
+                                <option value="5В">5В</option>
+                                <option value="5Г">5Г</option>
+                                <option value="5Д">5Д</option>
+                                <option value="5Е">5Е</option>
+                                <option value="5М">5М</option>
+                                <!-- 6 классы -->
+                                <option value="6А">6А</option>
+                                <option value="6Б">6Б</option>
+                                <option value="6В">6В</option>
+                                <option value="6Г">6Г</option>
+                                <option value="6Д">6Д</option>
+                                <option value="6Е">6Е</option>
+                                <!-- 7 классы -->
+                                <option value="7А">7А</option>
+                                <option value="7Б">7Б</option>
+                                <option value="7В">7В</option>
+                                <option value="7Г">7Г</option>
+                                <option value="7Д">7Д</option>
+                                <option value="7Е">7Е</option>
+                                <!-- 8 классы -->
+                                <option value="8А">8А</option>
+                                <option value="8Б">8Б</option>
+                                <option value="8В">8В</option>
+                                <option value="8Г">8Г</option>
+                                <option value="8Д">8Д</option>
+                                <option value="8Е">8Е</option>
+                                <!-- 9 классы -->
+                                <option value="9А">9А</option>
+                                <option value="9Б">9Б</option>
+                                <option value="9В">9В</option>
+                                <option value="9Г">9Г</option>
+                                <option value="9Д">9Д</option>
+                                <option value="9Е">9Е</option>
+                                <!-- 10 классы -->
+                                <option value="10А">10А</option>
+                                <option value="10Б">10Б</option>
+                                <!-- 11 классы -->
+                                <option value="11А">11А</option>
+                                <option value="11Б">11Б</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" class="form-label">Номер телефона *</label>
+                            <input type="tel" id="phone" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email" class="form-label">Электронная почта *</label>
+                            <input type="email" id="email" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Регистрация в Движении Первых</label>
+                            <div class="form-checkbox">
+                                <input type="checkbox" id="registered">
+                                <label for="registered">Зарегистрирован(а) на сайте движения первых</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn">Добавить активиста</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirm Delete Modal -->
+        <div id="confirm-modal" class="confirm-modal hidden">
+            <div class="modal-content">
+                <h3 class="modal-title">Подтверждение удаления</h3>
+                <p class="modal-message" id="modal-message">Вы уверены, что хотите удалить этого активиста? Это действие нельзя отменить.</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel-btn" id="cancel-delete">Отмена</button>
+                    <button class="modal-btn confirm-btn" id="confirm-delete">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for activists
+        let activists = [
+            {
+                id: 1,
+                firstName: "Александр",
+                lastName: "Петров",
+                middleName: "Сергеевич",
+                class: "10А",
+                phone: "+7 (999) 123-45-67",
+                email: "petrov@example.com",
+                registered: true
+            },
+            {
+                id: 2,
+                firstName: "Мария",
+                lastName: "Иванова",
+                middleName: "",
+                class: "9Б",
+                phone: "+7 (999) 987-65-43",
+                email: "ivanova@example.com",
+                registered: false
+            },
+            {
+                id: 3,
+                firstName: "Дмитрий",
+                lastName: "Сидоров",
+                middleName: "Андреевич",
+                class: "11А",
+                phone: "+7 (999) 456-78-90",
+                email: "sidorov@example.com",
+                registered: true
+            }
+        ];
+
+        // Editor accounts (updated passwords without 2026)
+        const editorAccounts = {
+            predsedatel: { password: "chairman", name: "Председатель совета обучающихся" },
+            sovetnik: { password: "advisor", name: "Советник директора" },
+            sekretar: { password: "secretary", name: "Секретарь" }
+        };
+
+        let currentUser = null;
+        let activistToDelete = null;
+
+        // DOM Elements
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameSelect = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginMessage = document.getElementById('login-message');
+        const currentUserSpan = document.getElementById('current-user');
+        const activistForm = document.getElementById('activist-form');
+        const formMessage = document.getElementById('form-message');
+        const searchInput = document.getElementById('search-input');
+        const sortBySelect = document.getElementById('sort-by');
+        const activistsContainer = document.getElementById('activists-container');
+        const confirmModal = document.getElementById('confirm-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+
+        // Initialize the app
+        function init() {
+            // Event listeners
+            loginBtn.addEventListener('click', handleLogin);
+            logoutBtn.addEventListener('click', handleLogout);
+            activistForm.addEventListener('submit', handleFormSubmit);
+            searchInput.addEventListener('input', renderActivists);
+            sortBySelect.addEventListener('change', renderActivists);
+            cancelDeleteBtn.addEventListener('click', hideConfirmModal);
+            confirmDeleteBtn.addEventListener('click', deleteActivistConfirmed);
+            
+            // Render initial state (login screen)
+            renderActivists();
+        }
+
+        // Handle login
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = usernameSelect.value;
+            const password = passwordInput.value;
+            
+            if (!username || !password) {
+                showLoginMessage('Пожалуйста, заполните все поля', 'error');
+                return;
+            }
+            
+            if (editorAccounts[username] && editorAccounts[username].password === password) {
+                currentUser = {
+                    username: username,
+                    name: editorAccounts[username].name
+                };
+                loginScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                currentUserSpan.textContent = currentUser.name;
+                passwordInput.value = '';
+                renderActivists();
+            } else {
+                showLoginMessage('Неверный логин или пароль', 'error');
+            }
+        }
+
+        // Handle logout
+        function handleLogout() {
+            currentUser = null;
+            mainApp.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            usernameSelect.value = '';
+            passwordInput.value = '';
+            loginMessage.classList.add('hidden');
+        }
+
+        // Show login message
+        function showLoginMessage(message, type) {
+            loginMessage.textContent = message;
+            loginMessage.className = `message ${type}`;
+            loginMessage.classList.remove('hidden');
+            setTimeout(() => {
+                loginMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Handle form submission
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                firstName: document.getElementById('first-name').value.trim(),
+                lastName: document.getElementById('last-name').value.trim(),
+                middleName: document.getElementById('middle-name').value.trim(),
+                class: document.getElementById('class').value,
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                registered: document.getElementById('registered').checked
+            };
+            
+            // Validate required fields
+            if (!formData.firstName || !formData.lastName || !formData.class || !formData.phone || !formData.email) {
+                showFormMessage('Пожалуйста, заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            // Check if activist already exists
+            const existingActivist = activists.find(a => 
+                a.firstName.toLowerCase() === formData.firstName.toLowerCase() &&
+                a.lastName.toLowerCase() === formData.lastName.toLowerCase() &&
+                a.class === formData.class
+            );
+            
+            if (existingActivist) {
+                showFormMessage('Такой активист уже существует в базе данных. Проверьте введенные данные.', 'error');
+                return;
+            }
+            
+            // Add new activist
+            const newActivist = {
+                id: Date.now(),
+                ...formData
+            };
+            
+            activists.push(newActivist);
+            renderActivists();
+            
+            // Reset form
+            activistForm.reset();
+            showFormMessage('Активист успешно добавлен!', 'success');
+            
+            // Clear message after 3 seconds
+            setTimeout(() => {
+                formMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Show form message
+        function showFormMessage(message, type) {
+            formMessage.textContent = message;
+            formMessage.className = `message ${type}`;
+            formMessage.classList.remove('hidden');
+        }
+
+        // Handle delete button click
+        function handleDeleteClick(activistId) {
+            const activist = activists.find(a => a.id === activistId);
+            if (activist) {
+                activistToDelete = activistId;
+                modalMessage.textContent = `Вы уверены, что хотите удалить активиста "${activist.lastName} ${activist.firstName}" из списка? Это действие нельзя отменить.`;
+                confirmModal.classList.remove('hidden');
+            }
+        }
+
+        // Hide confirm modal
+        function hideConfirmModal() {
+            confirmModal.classList.add('hidden');
+            activistToDelete = null;
+        }
+
+        // Delete activist confirmed
+        function deleteActivistConfirmed() {
+            if (activistToDelete !== null) {
+                activists = activists.filter(a => a.id !== activistToDelete);
+                renderActivists();
+                hideConfirmModal();
+                showFormMessage('Активист успешно удален!', 'success');
+                setTimeout(() => {
+                    formMessage.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        // Render activists list
+        function renderActivists() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const sortBy = sortBySelect.value;
+            
+            // Filter activists
+            let filteredActivists = activists.filter(activist => {
+                const fullName = `${activist.lastName} ${activist.firstName} ${activist.middleName}`.toLowerCase();
+                return (
+                    fullName.includes(searchTerm) ||
+                    activist.class.toLowerCase().includes(searchTerm) ||
+                    activist.phone.toLowerCase().includes(searchTerm) ||
+                    activist.email.toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            // Sort activists
+            filteredActivists.sort((a, b) => {
+                if (sortBy === 'name') {
+                    const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+                    const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+                    return nameA.localeCompare(nameB);
+                } else if (sortBy === 'class') {
+                    return a.class.localeCompare(b.class);
+                }
+                return 0;
+            });
+            
+            // Render activists
+            if (filteredActivists.length === 0) {
+                activistsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Нет активистов</h3>
+                        <p>Не найдено активистов по вашему запросу</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            activistsContainer.innerHTML = filteredActivists.map(activist => `
+                <div class="activist-card">
+                    <div class="activist-header">
+                        <div class="activist-name">${activist.lastName} ${activist.firstName} ${activist.middleName}</div>
+                        <div class="registration-status">
+                            <span class="${activist.registered ? 'registered' : 'not-registered'}">
+                                ${activist.registered ? 'Зарегистрирован' : 'Не зарегистрирован'}
+                            </span>
+                            ${currentUser ? `<button class="delete-btn" onclick="handleDeleteClick(${activist.id})">Удалить</button>` : ''}
+                        </div>
+                    </div>
+                    <div class="activist-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Класс</span>
+                            <span class="detail-value">${activist.class}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Телефон</span>
+                            <span class="detail-value">${activist.phone}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value">${activist.email}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Make handleDeleteClick available globally
+        window.handleDeleteClick = handleDeleteClick;
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
             padding: 20px;
         }
         
