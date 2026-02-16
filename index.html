@@ -379,6 +379,24 @@ background: rgba(37, 99, 235, 0.05);
 #file-input {
 display: none;
 }
+.sync-status {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+font-size: 12px;
+color: var(--text-light);
+}
+.sync-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background: var(--success);
+animation: pulse 2s infinite;
+}
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.5; }
+}
 </style>
 </head>
 <body>
@@ -412,6 +430,7 @@ display: none;
 <div class="auth-section">
 <div class="user-info">
 <span id="current-user">Пользователь</span>
+<span class="sync-status"><span class="sync-dot"></span>Синхронизация</span>
 </div>
 <button id="logout-btn" class="logout-btn">Выйти</button>
 </div>
@@ -485,7 +504,6 @@ display: none;
 <label for="class" class="form-label">Класс *</label>
 <select id="class" class="form-select" required>
 <option value="">Выберите класс</option>
-<!-- 5 классы -->
 <option value="5А">5А</option>
 <option value="5Б">5Б</option>
 <option value="5В">5В</option>
@@ -493,38 +511,32 @@ display: none;
 <option value="5Д">5Д</option>
 <option value="5Е">5Е</option>
 <option value="5М">5М</option>
-<!-- 6 классы -->
 <option value="6А">6А</option>
 <option value="6Б">6Б</option>
 <option value="6В">6В</option>
 <option value="6Г">6Г</option>
 <option value="6Д">6Д</option>
 <option value="6Е">6Е</option>
-<!-- 7 классы -->
 <option value="7А">7А</option>
 <option value="7Б">7Б</option>
 <option value="7В">7В</option>
 <option value="7Г">7Г</option>
 <option value="7Д">7Д</option>
 <option value="7Е">7Е</option>
-<!-- 8 классы -->
 <option value="8А">8А</option>
 <option value="8Б">8Б</option>
 <option value="8В">8В</option>
 <option value="8Г">8Г</option>
 <option value="8Д">8Д</option>
 <option value="8Е">8Е</option>
-<!-- 9 классы -->
 <option value="9А">9А</option>
 <option value="9Б">9Б</option>
 <option value="9В">9В</option>
 <option value="9Г">9Г</option>
 <option value="9Д">9Д</option>
 <option value="9Е">9Е</option>
-<!-- 10 классы -->
 <option value="10А">10А</option>
 <option value="10Б">10Б</option>
-<!-- 11 классы -->
 <option value="11А">11А</option>
 <option value="11Б">11Б</option>
 </select>
@@ -568,15 +580,39 @@ display: none;
 </div>
 </div>
 </div>
-<script>
-// Data model
+</div>
+
+<script type="module">
+// Импорт функций Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// --- КОНФИГУРАЦИЯ FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyD-6FhGeq3uC06NwQC_S6t1cdjwcREe_OE",
+  authDomain: "schoolactivists-856eb.firebaseapp.com",
+  projectId: "schoolactivists-856eb",
+  storageBucket: "schoolactivists-856eb.firebasestorage.app",
+  messagingSenderId: "606944183235",
+  appId: "1:606944183235:web:f682cf8b5da30fa71db376",
+  measurementId: "G-2N86E0NVJC"
+};
+
+// Инициализация Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Глобальные переменные
 let activists = [];
+let isDataLoaded = false;
+
 const editorAccounts = {
-predsedatel: { password: "chairman", name: "Председатель совета обучающихся" },
-sovetnik: { password: "advisor", name: "Советник директора" },
-sekretar: { password: "secretary", name: "Секретарь" }
+  predsedatel: { password: "chairman", name: "Председатель совета обучающихся" },
+  sovetnik: { password: "advisor", name: "Советник директора" },
+  sekretar: { password: "secretary", name: "Секретарь" }
 };
 let currentUser = null;
+
 // DOM Elements
 const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
@@ -594,8 +630,6 @@ const statusFilter = document.getElementById('status-filter');
 const gradeFilter = document.getElementById('grade-filter');
 const activistsContainer = document.getElementById('activists-container');
 const exportBtn = document.getElementById('export-btn');
-const importBtn = document.getElementById('import-btn');
-const csvImportArea = document.getElementById('csv-import');
 const formTitle = document.getElementById('form-title');
 const formSubmitBtn = document.getElementById('form-submit-btn');
 const editIdInput = document.getElementById('edit-id');
@@ -604,547 +638,470 @@ const resetFiltersBtn = document.getElementById('reset-filters-btn');
 const dropArea = document.getElementById('drop-area');
 const fileInput = document.getElementById('file-input');
 const browseBtn = document.getElementById('browse-btn');
-// Initialize IndexedDB
-const DB_NAME = 'SchoolActivistsDB';
-const STORE_NAME = 'activists';
-let db;
-function initDB() {
-return new Promise((resolve, reject) => {
-const request = indexedDB.open(DB_NAME, 1);
-request.onerror = () => reject(request.error);
-request.onsuccess = () => {
-db = request.result;
-resolve();
-};
-request.onupgradeneeded = (event) => {
-const db = event.target.result;
-if (!db.objectStoreNames.contains(STORE_NAME)) {
-const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-store.createIndex('lastName', 'lastName', { unique: false });
+
+// --- ФУНКЦИИ FIREBASE ---
+
+// Подписка на изменения в базе данных (синхронизация в реальном времени)
+function subscribeToData() {
+  const activistsRef = ref(db, 'activists');
+  onValue(activistsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      activists = Object.keys(data).map(key => ({
+        id: key,
+        ...data[key]
+      }));
+    } else {
+      activists = [];
+    }
+    isDataLoaded = true;
+    renderActivists();
+  }, (error) => {
+    console.error("Ошибка синхронизации:", error);
+    showFormMessage('Ошибка синхронизации с сервером', 'error');
+  });
 }
-};
-});
-}
-async function loadFromDB() {
-try {
-await initDB();
-const transaction = db.transaction([STORE_NAME], 'readonly');
-const store = transaction.objectStore(STORE_NAME);
-const request = store.getAll();
-return new Promise((resolve, reject) => {
-request.onsuccess = () => resolve(request.result);
-request.onerror = () => reject(request.error);
-});
-} catch (err) {
-console.warn('IndexedDB not available, using localStorage fallback');
-const data = localStorage.getItem('activists');
-return data ? JSON.parse(data) : [];
-}
-}
-async function saveToDB(data) {
-try {
-if (db) {
-const transaction = db.transaction([STORE_NAME], 'readwrite');
-const store = transaction.objectStore(STORE_NAME);
-data.forEach(item => store.put(item));
-} else {
-localStorage.setItem('activists', JSON.stringify(data));
-}
-} catch (err) {
-console.warn('Failed to save to DB, using localStorage');
-localStorage.setItem('activists', JSON.stringify(data));
-}
-}
-// Escape HTML to prevent XSS
+
+// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+
 function escapeHtml(text) {
-const div = document.createElement('div');
-div.textContent = text;
-return div.innerHTML;
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
-// Get grade range
+
 function getGradeRange(className) {
-if (!className) return null;
-const num = parseInt(className);
-if (num >= 5 && num <= 7) return '5-7';
-if (num >= 8 && num <= 9) return '8-9';
-if (num >= 10 && num <= 11) return '10-11';
-return null;
+  if (!className) return null;
+  const num = parseInt(className);
+  if (num >= 5 && num <= 7) return '5-7';
+  if (num >= 8 && num <= 9) return '8-9';
+  if (num >= 10 && num <= 11) return '10-11';
+  return null;
 }
-// Format date
+
 function formatDate(dateStr) {
-const date = new Date(dateStr);
-return date.toLocaleDateString('ru-RU');
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('ru-RU');
 }
-// Export to Excel
+
+// Экспорт в Excel
 function exportToExcel() {
-if (activists.length === 0) {
-alert('Нет данных для экспорта');
-return;
+  if (activists.length === 0) {
+    alert('Нет данных для экспорта');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    alert('Библиотека SheetJS не загружена. Проверьте подключение интернета.');
+    return;
+  }
+  
+  const wsData = [
+    ['Фамилия', 'Имя', 'Отчество', 'Класс', 'Телефон', 'Email', 'Роль', 'Классный руководитель', 'Зарегистрирован', 'Статус', 'Дата добавления']
+  ];
+  activists.forEach(a => {
+    wsData.push([
+      a.lastName,
+      a.firstName,
+      a.middleName || '',
+      a.class,
+      a.phone,
+      a.email,
+      a.role || '',
+      a.curator || '',
+      a.registered ? 'Да' : 'Нет',
+      a.archived ? 'Архив' : 'Активен',
+      formatDate(a.dateAdded)
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Активисты');
+  XLSX.writeFile(wb, `активисты_школы_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
-const wsData = [
-['Фамилия', 'Имя', 'Отчество', 'Класс', 'Телефон', 'Email', 'Роль', 'Классный руководитель', 'Зарегистрирован', 'Статус', 'Дата добавления']
-];
-activists.forEach(a => {
-wsData.push([
-a.lastName,
-a.firstName,
-a.middleName || '',
-a.class,
-a.phone,
-a.email,
-a.role || '',
-a.curator || '',
-a.registered ? 'Да' : 'Нет',
-a.archived ? 'Архив' : 'Активен',
-formatDate(a.dateAdded)
-]);
-});
-const ws = XLSX.utils.aoa_to_sheet(wsData);
-const wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, 'Активисты');
-const colWidths = wsData[0].map((_, i) => {
-const maxWidth = Math.max(
-10,
-...wsData.map(row => (row[i] ? row[i].toString().length : 0))
-);
-return { wch: Math.min(maxWidth + 2, 30) };
-});
-ws['!cols'] = colWidths;
-XLSX.writeFile(wb, `активисты_школы_${new Date().toISOString().slice(0,10)}.xlsx`);
-}
-// Parse Excel file
+
+// Парсинг Excel файла
 function parseExcelFile(data) {
-const workbook = XLSX.read(data, { type: 'array' });
-const firstSheetName = workbook.SheetNames[0];
-const worksheet = workbook.Sheets[firstSheetName];
-const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-if (jsonData.length < 2) return [];
-const headers = jsonData[0].map(h => h.toString().trim());
-const result = [];
-for (let i = 1; i < jsonData.length; i++) {
-const row = jsonData[i];
-if (!row || row.length === 0) continue;
-const obj = {};
-for (let j = 0; j < headers.length && j < row.length; j++) {
-obj[headers[j]] = row[j] != null ? row[j].toString().trim() : '';
+  const workbook = XLSX.read(data, { type: 'array' });
+  const firstSheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[firstSheetName];
+  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+  if (jsonData.length < 2) return [];
+  const headers = jsonData[0].map(h => h.toString().trim());
+  const result = [];
+  for (let i = 1; i < jsonData.length; i++) {
+    const row = jsonData[i];
+    if (!row || row.length === 0) continue;
+    const obj = {};
+    for (let j = 0; j < headers.length && j < row.length; j++) {
+      obj[headers[j]] = row[j] != null ? row[j].toString().trim() : '';
+    }
+    if (!obj['Фамилия'] || !obj['Имя'] || !obj['Класс'] || !obj['Телефон'] || !obj['Email']) {
+      continue;
+    }
+    result.push({
+      lastName: obj['Фамилия'] || '',
+      firstName: obj['Имя'] || '',
+      middleName: obj['Отчество'] || '',
+      class: obj['Класс'] || '',
+      phone: obj['Телефон'] || '',
+      email: obj['Email'] || '',
+      role: obj['Роль'] || '',
+      curator: obj['Классный руководитель'] || '',
+      registered: obj['Зарегистрирован'] === 'Да',
+      archived: obj['Статус'] === 'Архив',
+      dateAdded: new Date().toISOString()
+    });
+  }
+  return result;
 }
-if (!obj['Фамилия'] || !obj['Имя'] || !obj['Класс'] || !obj['Телефон'] || !obj['Email']) {
-continue;
-}
-result.push({
-id: Date.now() + Math.random(),
-lastName: obj['Фамилия'] || '',
-firstName: obj['Имя'] || '',
-middleName: obj['Отчество'] || '',
-class: obj['Класс'] || '',
-phone: obj['Телефон'] || '',
-email: obj['Email'] || '',
-role: obj['Роль'] || '',
-curator: obj['Классный руководитель'] || '',
-registered: obj['Зарегистрирован'] === 'Да',
-archived: obj['Статус'] === 'Архив',
-dateAdded: new Date().toISOString()
-});
-}
-return result;
-}
-// Handle file import
+
+// Обработка импорта файла
 function handleFile(file) {
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const data = new Uint8Array(e.target.result);
-const newActivists = parseExcelFile(data);
-if (newActivists.length === 0) {
-showFormMessage('Не удалось распознать данные или нет обязательных полей', 'error');
-return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const newActivists = parseExcelFile(data);
+      if (newActivists.length === 0) {
+        showFormMessage('Не удалось распознать данные', 'error');
+        return;
+      }
+      
+      const updates = {};
+      newActivists.forEach(act => {
+        const newKey = push(ref(db, 'activists')).key;
+        updates['/activists/' + newKey] = act;
+      });
+      
+      update(ref(db), updates)
+        .then(() => showFormMessage(`Импортировано ${newActivists.length} активистов`, 'success'))
+        .catch(err => showFormMessage('Ошибка импорта: ' + err.message, 'error'));
+        
+    } catch (err) {
+      console.error(err);
+      showFormMessage('Ошибка при чтении файла', 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
-activists.push(...newActivists);
-saveDataAndRender();
-showFormMessage(`Импортировано ${newActivists.length} активистов`, 'success');
-} catch (err) {
-console.error(err);
-showFormMessage('Ошибка при чтении файла Excel', 'error');
-}
-};
-reader.readAsArrayBuffer(file);
-}
-// ✅ ВОССТАНОВЛЕНИЕ СЕССИИ ПРИ ЗАГРУЗКЕ
+
+// Восстановление сессии
 function restoreSession() {
-const savedUser = localStorage.getItem('currentUser');
-if (savedUser) {
-try {
-const user = JSON.parse(savedUser);
-// Проверяем, что такой аккаунт существует
-if (editorAccounts[user.username]) {
-currentUser = user;
-loginScreen.classList.add('hidden');
-mainApp.classList.remove('hidden');
-currentUserSpan.textContent = user.name;
-return true;
+  const savedUser = localStorage.getItem('currentUser');
+  if (savedUser) {
+    try {
+      const user = JSON.parse(savedUser);
+      if (editorAccounts[user.username]) {
+        currentUser = user;
+        loginScreen.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        currentUserSpan.textContent = user.name;
+        subscribeToData();
+        return true;
+      }
+    } catch (e) {
+      console.warn('Invalid session');
+    }
+  }
+  return false;
 }
-} catch (e) {
-console.warn('Invalid session data');
-}
-}
-return false;
-}
-// Initialize the app
+
+// Инициализация приложения
 async function init() {
-// Load data
-activists = await loadFromDB();
-// Event listeners
-loginBtn.addEventListener('click', handleLogin);
-logoutBtn.addEventListener('click', handleLogout);
-activistForm.addEventListener('submit', handleFormSubmit);
-searchInput.addEventListener('input', renderActivists);
-sortBySelect.addEventListener('change', renderActivists);
-statusFilter.addEventListener('change', renderActivists);
-gradeFilter.addEventListener('change', renderActivists);
-exportBtn.addEventListener('click', exportToExcel);
-importBtn.addEventListener('click', handleImport);
-resetFiltersBtn.addEventListener('click', resetFilters);
-browseBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => {
-if (e.target.files[0]) handleFile(e.target.files[0]);
-});
-// Drag and drop
-dropArea.addEventListener('dragover', (e) => {
-e.preventDefault();
-dropArea.classList.add('dragover');
-});
-dropArea.addEventListener('dragleave', () => {
-dropArea.classList.remove('dragover');
-});
-dropArea.addEventListener('drop', (e) => {
-e.preventDefault();
-dropArea.classList.remove('dragover');
-if (e.dataTransfer.files[0]) {
-handleFile(e.dataTransfer.files[0]);
+  loginBtn.addEventListener('click', handleLogin);
+  logoutBtn.addEventListener('click', handleLogout);
+  activistForm.addEventListener('submit', handleFormSubmit);
+  searchInput.addEventListener('input', renderActivists);
+  sortBySelect.addEventListener('change', renderActivists);
+  statusFilter.addEventListener('change', renderActivists);
+  gradeFilter.addEventListener('change', renderActivists);
+  exportBtn.addEventListener('click', exportToExcel);
+  resetFiltersBtn.addEventListener('click', resetFilters);
+  browseBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('dragover');
+  });
+  dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+
+  renderAlphabetFilter();
+  
+  const sessionRestored = restoreSession();
+  if (!sessionRestored) {
+    loginScreen.classList.remove('hidden');
+    mainApp.classList.add('hidden');
+  }
 }
-});
-// 🔑 Восстановление сессии
-const sessionRestored = restoreSession();
-// Load saved filters (only if session active)
-if (sessionRestored) {
-const savedFilters = JSON.parse(localStorage.getItem('activistFilters') || '{}');
-if (savedFilters.search) searchInput.value = savedFilters.search;
-if (savedFilters.sortBy) sortBySelect.value = savedFilters.sortBy;
-if (savedFilters.status) statusFilter.value = savedFilters.status;
-if (savedFilters.grade) gradeFilter.value = savedFilters.grade;
-renderAlphabetFilter();
-renderActivists();
-} else {
-// Show login screen
-loginScreen.classList.remove('hidden');
-mainApp.classList.add('hidden');
-renderAlphabetFilter();
-}
-}
+
+// Рендер алфавитного фильтра
 function renderAlphabetFilter() {
-const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ';
-alphabetFilter.innerHTML = letters.split('').map(letter =>
-`<button class="alphabet-btn" data-letter="${letter}">${letter}</button>`
-).join('');
-alphabetFilter.querySelectorAll('.alphabet-btn').forEach(btn => {
-btn.addEventListener('click', () => {
-alphabetFilter.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
-btn.classList.add('active');
-renderActivists();
-});
-});
+  const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ';
+  alphabetFilter.innerHTML = letters.split('').map(letter =>
+    `<button class="alphabet-btn" data-letter="${letter}">${letter}</button>`
+  ).join('');
+  alphabetFilter.querySelectorAll('.alphabet-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      alphabetFilter.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderActivists();
+    });
+  });
 }
+
 function getActiveLetter() {
-const active = alphabetFilter.querySelector('.alphabet-btn.active');
-return active ? active.dataset.letter : null;
+  const active = alphabetFilter.querySelector('.alphabet-btn.active');
+  return active ? active.dataset.letter : null;
 }
+
 function resetFilters() {
-searchInput.value = '';
-sortBySelect.value = 'name';
-statusFilter.value = 'all';
-gradeFilter.value = 'all';
-alphabetFilter.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
-localStorage.removeItem('activistFilters');
-renderActivists();
+  searchInput.value = '';
+  sortBySelect.value = 'name';
+  statusFilter.value = 'all';
+  gradeFilter.value = 'all';
+  alphabetFilter.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
+  renderActivists();
 }
-// Handle login
+
+// Обработка входа
 function handleLogin(e) {
-e.preventDefault();
-const username = usernameSelect.value;
-const password = passwordInput.value;
-if (!username || !password) {
-showLoginMessage('Пожалуйста, заполните все поля', 'error');
-return;
+  e.preventDefault();
+  const username = usernameSelect.value;
+  const password = passwordInput.value;
+  if (!username || !password) {
+    showLoginMessage('Заполните все поля', 'error');
+    return;
+  }
+  if (editorAccounts[username] && editorAccounts[username].password === password) {
+    currentUser = { username, name: editorAccounts[username].name };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    loginScreen.classList.add('hidden');
+    mainApp.classList.remove('hidden');
+    currentUserSpan.textContent = currentUser.name;
+    passwordInput.value = '';
+    subscribeToData();
+  } else {
+    showLoginMessage('Неверный логин или пароль', 'error');
+  }
 }
-if (editorAccounts[username] && editorAccounts[username].password === password) {
-currentUser = {
-username: username,
-name: editorAccounts[username].name
-};
-// ✅ Сохраняем сессию
-localStorage.setItem('currentUser', JSON.stringify(currentUser));
-loginScreen.classList.add('hidden');
-mainApp.classList.remove('hidden');
-currentUserSpan.textContent = currentUser.name;
-passwordInput.value = '';
-renderActivists();
-} else {
-showLoginMessage('Неверный логин или пароль', 'error');
-}
-}
-// Handle logout
+
+// Обработка выхода
 function handleLogout() {
-currentUser = null;
-// ✅ Очищаем сессию
-localStorage.removeItem('currentUser');
-localStorage.removeItem('activistFilters');
-mainApp.classList.add('hidden');
-loginScreen.classList.remove('hidden');
-usernameSelect.value = '';
-passwordInput.value = '';
-loginMessage.classList.add('hidden');
+  currentUser = null;
+  localStorage.removeItem('currentUser');
+  mainApp.classList.add('hidden');
+  loginScreen.classList.remove('hidden');
+  usernameSelect.value = '';
+  passwordInput.value = '';
+  loginMessage.classList.add('hidden');
+  activists = [];
+  renderActivists();
 }
-function showLoginMessage(message, type) {
-loginMessage.textContent = message;
-loginMessage.className = `message ${type}`;
-loginMessage.classList.remove('hidden');
-setTimeout(() => loginMessage.classList.add('hidden'), 3000);
+
+function showLoginMessage(msg, type) {
+  loginMessage.textContent = msg;
+  loginMessage.className = `message ${type}`;
+  loginMessage.classList.remove('hidden');
+  setTimeout(() => loginMessage.classList.add('hidden'), 3000);
 }
-function showFormMessage(message, type) {
-formMessage.textContent = message;
-formMessage.className = `message ${type}`;
-formMessage.classList.remove('hidden');
-setTimeout(() => formMessage.classList.add('hidden'), 3000);
+
+function showFormMessage(msg, type) {
+  formMessage.textContent = msg;
+  formMessage.className = `message ${type}`;
+  formMessage.classList.remove('hidden');
+  setTimeout(() => formMessage.classList.add('hidden'), 3000);
 }
-// Handle form submission
+
+// Обработка отправки формы
 function handleFormSubmit(e) {
-e.preventDefault();
-const formData = {
-firstName: document.getElementById('first-name').value.trim(),
-lastName: document.getElementById('last-name').value.trim(),
-middleName: document.getElementById('middle-name').value.trim(),
-class: document.getElementById('class').value,
-role: document.getElementById('role').value.trim(),
-curator: document.getElementById('curator').value.trim(),
-phone: document.getElementById('phone').value.trim(),
-email: document.getElementById('email').value.trim(),
-registered: document.getElementById('registered').checked
-};
-if (!formData.firstName || !formData.lastName || !formData.class || !formData.phone || !formData.email) {
-showFormMessage('Пожалуйста, заполните все обязательные поля', 'error');
-return;
+  e.preventDefault();
+  const formData = {
+    firstName: document.getElementById('first-name').value.trim(),
+    lastName: document.getElementById('last-name').value.trim(),
+    middleName: document.getElementById('middle-name').value.trim(),
+    class: document.getElementById('class').value,
+    role: document.getElementById('role').value.trim(),
+    curator: document.getElementById('curator').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    registered: document.getElementById('registered').checked
+  };
+
+  if (!formData.firstName || !formData.lastName || !formData.class || !formData.phone || !formData.email) {
+    showFormMessage('Заполните обязательные поля', 'error');
+    return;
+  }
+
+  const editId = editIdInput.value;
+  const activistsRef = ref(db, 'activists');
+
+  if (editId) {
+    update(ref(db, 'activists/' + editId), formData)
+      .then(() => {
+        editIdInput.value = '';
+        formTitle.textContent = 'Добавить активиста';
+        formSubmitBtn.textContent = 'Добавить активиста';
+        activistForm.reset();
+        showFormMessage('Обновлено!', 'success');
+      })
+      .catch(err => showFormMessage('Ошибка: ' + err.message, 'error'));
+  } else {
+    const newActivist = {
+      ...formData,
+      archived: false,
+      dateAdded: new Date().toISOString()
+    };
+    push(activistsRef, newActivist)
+      .then(() => {
+        activistForm.reset();
+        showFormMessage('Добавлен!', 'success');
+      })
+      .catch(err => showFormMessage('Ошибка: ' + err.message, 'error'));
+  }
 }
-const editId = editIdInput.value;
-if (editId) {
-// Update existing
-const index = activists.findIndex(a => a.id == editId);
-if (index !== -1) {
-activists[index] = { ...activists[index], ...formData };
-}
-editIdInput.value = '';
-formTitle.textContent = 'Добавить активиста';
-formSubmitBtn.textContent = 'Добавить активиста';
-} else {
-// Add new
-const newActivist = {
-id: Date.now(),
-...formData,
-archived: false,
-dateAdded: new Date().toISOString()
-};
-activists.push(newActivist);
-}
-saveDataAndRender();
-activistForm.reset();
-showFormMessage(editId ? 'Активист успешно обновлён!' : 'Активист успешно добавлен!', 'success');
-}
-// Archive activist (no confirmation)
+
+// Архивация активиста
 function archiveActivist(activistId) {
-const activist = activists.find(a => a.id === activistId);
-if (activist) {
-activist.archived = true;
-saveDataAndRender();
-showFormMessage('Активист перемещён в архив', 'success');
+  update(ref(db, 'activists/' + activistId), { archived: true })
+    .then(() => showFormMessage('Перемещён в архив', 'success'))
+    .catch(err => alert(err.message));
 }
-}
-// Edit activist
+
+// Редактирование активиста
 function editActivist(activistId) {
-const activist = activists.find(a => a.id === activistId);
-if (!activist) return;
-document.getElementById('first-name').value = activist.firstName;
-document.getElementById('last-name').value = activist.lastName;
-document.getElementById('middle-name').value = activist.middleName || '';
-document.getElementById('class').value = activist.class;
-document.getElementById('role').value = activist.role || '';
-document.getElementById('curator').value = activist.curator || '';
-document.getElementById('phone').value = activist.phone;
-document.getElementById('email').value = activist.email;
-document.getElementById('registered').checked = activist.registered;
-editIdInput.value = activist.id;
-formTitle.textContent = 'Редактировать активиста';
-formSubmitBtn.textContent = 'Сохранить изменения';
-window.scrollTo(0, 0);
+  const activist = activists.find(a => a.id === activistId);
+  if (!activist) return;
+  document.getElementById('first-name').value = activist.firstName;
+  document.getElementById('last-name').value = activist.lastName;
+  document.getElementById('middle-name').value = activist.middleName || '';
+  document.getElementById('class').value = activist.class;
+  document.getElementById('role').value = activist.role || '';
+  document.getElementById('curator').value = activist.curator || '';
+  document.getElementById('phone').value = activist.phone;
+  document.getElementById('email').value = activist.email;
+  document.getElementById('registered').checked = activist.registered;
+  editIdInput.value = activist.id;
+  formTitle.textContent = 'Редактировать активиста';
+  formSubmitBtn.textContent = 'Сохранить изменения';
+  window.scrollTo(0, 0);
 }
-// Delete activist permanently (only from archive, no confirmation)
+
+// Удаление активиста
 function deleteActivist(activistId) {
-// Fix: ensure numeric comparison
-activists = activists.filter(a => a.id !== +activistId);
-saveDataAndRender();
-showFormMessage('Активист удалён навсегда', 'success');
+  if(!confirm('Вы уверены? Это действие нельзя отменить.')) return;
+  
+  remove(ref(db, 'activists/' + activistId))
+    .then(() => showFormMessage('Удалён навсегда', 'success'))
+    .catch(err => alert(err.message));
 }
-function handleImport() {
-const csvText = csvImportArea.value.trim();
-if (!csvText) {
-showFormMessage('Вставьте данные для импорта', 'error');
-return;
-}
-try {
-const newActivists = parseCSV(csvText);
-if (newActivists.length === 0) {
-showFormMessage('Не удалось распознать данные', 'error');
-return;
-}
-activists.push(...newActivists);
-saveDataAndRender();
-csvImportArea.value = '';
-showFormMessage(`Импортировано ${newActivists.length} активистов`, 'success');
-} catch (e) {
-console.error(e);
-showFormMessage('Ошибка при импорте данных', 'error');
-}
-}
-async function saveDataAndRender() {
-// Save filters
-localStorage.setItem('activistFilters', JSON.stringify({
-search: searchInput.value,
-sortBy: sortBySelect.value,
-status: statusFilter.value,
-grade: gradeFilter.value
-}));
-await saveToDB(activists);
-renderActivists();
-}
+
+// Рендер списка активистов
 function renderActivists() {
-const searchTerm = searchInput.value.toLowerCase();
-const sortBy = sortBySelect.value;
-const status = statusFilter.value;
-const grade = gradeFilter.value;
-const letter = getActiveLetter();
-let filtered = activists.filter(activist => {
-// Status filter
-if (status === 'active' && activist.archived) return false;
-if (status === 'archived' && !activist.archived) return false;
-// Grade filter
-if (grade !== 'all') {
-const range = getGradeRange(activist.class);
-if (range !== grade) return false;
+  if (!isDataLoaded && !currentUser) return;
+
+  const searchTerm = searchInput.value.toLowerCase();
+  const sortBy = sortBySelect.value;
+  const status = statusFilter.value;
+  const grade = gradeFilter.value;
+  const letter = getActiveLetter();
+
+  let filtered = activists.filter(activist => {
+    if (status === 'active' && activist.archived) return false;
+    if (status === 'archived' && !activist.archived) return false;
+    if (grade !== 'all') {
+      const range = getGradeRange(activist.class);
+      if (range !== grade) return false;
+    }
+    if (letter && (!activist.lastName || !activist.lastName.startsWith(letter))) return false;
+    
+    const fullName = `${activist.lastName} ${activist.firstName} ${activist.middleName}`.toLowerCase();
+    return (
+      fullName.includes(searchTerm) ||
+      activist.class.toLowerCase().includes(searchTerm) ||
+      activist.phone.toLowerCase().includes(searchTerm) ||
+      activist.email.toLowerCase().includes(searchTerm) ||
+      (activist.role && activist.role.toLowerCase().includes(searchTerm)) ||
+      (activist.curator && activist.curator.toLowerCase().includes(searchTerm))
+    );
+  });
+
+  filtered.sort((a, b) => {
+    if (sortBy === 'name') {
+      return `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`);
+    } else if (sortBy === 'class') {
+      return a.class.localeCompare(b.class);
+    } else if (sortBy === 'dateAdded') {
+      return new Date(b.dateAdded) - new Date(a.dateAdded);
+    }
+    return 0;
+  });
+
+  const groups = {};
+  filtered.forEach(a => {
+    const firstLetter = a.lastName ? a.lastName[0].toUpperCase() : '#';
+    if (!groups[firstLetter]) groups[firstLetter] = [];
+    groups[firstLetter].push(a);
+  });
+
+  if (filtered.length === 0) {
+    activistsContainer.innerHTML = `<div class="empty-state"><h3>Нет активистов</h3><p>По вашему запросу ничего не найдено</p></div>`;
+    return;
+  }
+
+  let html = '';
+  Object.keys(groups).sort().forEach(letter => {
+    html += `<h3 style="margin: 20px 0 10px; color: var(--primary-dark);">${letter}</h3>`;
+    groups[letter].forEach(activist => {
+      const fullName = escapeHtml(`${activist.lastName} ${activist.firstName} ${activist.middleName}`);
+      const roleBadge = activist.role ? `<span class="badge">${escapeHtml(activist.role)}</span>` : '';
+      const statusClass = activist.archived ? 'archived' : '';
+      const statusText = activist.archived ?
+        '<span class="archived-status">В архиве</span>' :
+        `<span class="${activist.registered ? 'registered' : 'not-registered'}">${activist.registered ? 'Зарегистрирован' : 'Не зарегистрирован'}</span>`;
+
+      html += `
+      <div class="activist-card ${statusClass}" id="card-${activist.id}">
+        <div class="activist-header">
+          <div class="activist-name">${fullName} ${roleBadge}</div>
+          <div class="registration-status">
+            ${statusText}
+            ${currentUser ? `
+              <button class="action-btn edit-btn" onclick="window.editActivist('${activist.id}')">Изменить</button>
+              ${!activist.archived ?
+                `<button class="action-btn archive-btn" onclick="window.archiveActivist('${activist.id}')">Архив</button>` :
+                `<button class="action-btn" onclick="window.deleteActivist('${activist.id}')">Удалить</button>`
+              }
+            ` : ''}
+          </div>
+        </div>
+        <div class="activist-details">
+          <div class="detail-item"><span class="detail-label">Класс</span><span class="detail-value">${escapeHtml(activist.class)}</span></div>
+          <div class="detail-item"><span class="detail-label">Телефон</span><span class="detail-value">${escapeHtml(activist.phone)}</span></div>
+          <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">${escapeHtml(activist.email)}</span></div>
+          ${activist.curator ? `<div class="detail-item"><span class="detail-label">Куратор</span><span class="detail-value">${escapeHtml(activist.curator)}</span></div>` : ''}
+          <div class="detail-item"><span class="detail-label">Добавлен</span><span class="detail-value">${formatDate(activist.dateAdded)}</span></div>
+        </div>
+      </div>`;
+    });
+  });
+  activistsContainer.innerHTML = html;
 }
-// Letter filter
-if (letter && (!activist.lastName || !activist.lastName.startsWith(letter))) return false;
-// Search
-const fullName = `${activist.lastName} ${activist.firstName} ${activist.middleName}`.toLowerCase();
-return (
-fullName.includes(searchTerm) ||
-activist.class.toLowerCase().includes(searchTerm) ||
-activist.phone.toLowerCase().includes(searchTerm) ||
-activist.email.toLowerCase().includes(searchTerm) ||
-(activist.role && activist.role.toLowerCase().includes(searchTerm)) ||
-(activist.curator && activist.curator.toLowerCase().includes(searchTerm))
-);
-});
-// Sort
-filtered.sort((a, b) => {
-if (sortBy === 'name') {
-const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
-const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-return nameA.localeCompare(nameB);
-} else if (sortBy === 'class') {
-return a.class.localeCompare(b.class);
-} else if (sortBy === 'dateAdded') {
-return new Date(b.dateAdded) - new Date(a.dateAdded);
-}
-return 0;
-});
-// Group by first letter of last name
-const groups = {};
-filtered.forEach(a => {
-const firstLetter = a.lastName ? a.lastName[0].toUpperCase() : '#';
-if (!groups[firstLetter]) groups[firstLetter] = [];
-groups[firstLetter].push(a);
-});
-if (filtered.length === 0) {
-activistsContainer.innerHTML = `
-<div class="empty-state">
-<h3>Нет активистов</h3>
-<p>Не найдено активистов по вашему запросу</p>
-</div>
-`;
-return;
-}
-let html = '';
-Object.keys(groups).sort().forEach(letter => {
-html += `<h3 style="margin: 20px 0 10px; color: var(--primary-dark);">${letter}</h3>`;
-groups[letter].forEach(activist => {
-const fullName = escapeHtml(`${activist.lastName} ${activist.firstName} ${activist.middleName}`);
-const roleBadge = activist.role ? `<span class="badge">${escapeHtml(activist.role)}</span>` : '';
-const statusClass = activist.archived ? 'archived' : '';
-const statusText = activist.archived ?
-'<span class="archived-status">В архиве</span>' :
-`<span class="${activist.registered ? 'registered' : 'not-registered'}">
-${activist.registered ? 'Зарегистрирован' : 'Не зарегистрирован'}
-</span>`;
-html += `
-<div class="activist-card ${statusClass}" id="card-${activist.id}">
-<div class="activist-header">
-<div class="activist-name">
-${fullName}
-${roleBadge}
-</div>
-<div class="registration-status">
-${statusText}
-${currentUser ? `
-<button class="action-btn edit-btn" onclick="editActivist(${activist.id})">Изменить</button>
-${!activist.archived ?
-`<button class="action-btn archive-btn" onclick="archiveActivist(${activist.id})">Архив</button>` :
-`<button class="action-btn" onclick="deleteActivist(${activist.id})">Удалить</button>`
-}
-` : ''}
-</div>
-</div>
-<div class="activist-details">
-<div class="detail-item">
-<span class="detail-label">Класс</span>
-<span class="detail-value">${escapeHtml(activist.class)}</span>
-</div>
-<div class="detail-item">
-<span class="detail-label">Телефон</span>
-<span class="detail-value">${escapeHtml(activist.phone)}</span>
-</div>
-<div class="detail-item">
-<span class="detail-label">Email</span>
-<span class="detail-value">${escapeHtml(activist.email)}</span>
-</div>
-${activist.curator ? `
-<div class="detail-item">
-<span class="detail-label">Классный руководитель</span>
-<span class="detail-value">${escapeHtml(activist.curator)}</span>
-</div>` : ''}
-<div class="detail-item">
-<span class="detail-label">Добавлен</span>
-<span class="detail-value">${formatDate(activist.dateAdded)}</span>
-</div>
-</div>
-</div>
-`;
-});
-});
-activistsContainer.innerHTML = html;
-}
-// Expose functions globally for onclick
+
+// Глобальные функции для onclick
 window.editActivist = editActivist;
 window.archiveActivist = archiveActivist;
 window.deleteActivist = deleteActivist;
-// Start app
+
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
