@@ -320,6 +320,10 @@ margin-top: 10px;
 .submit-btn:hover, .import-export-btn:hover {
 background: var(--primary-dark);
 }
+.submit-btn:disabled {
+background: var(--text-light);
+cursor: not-allowed;
+}
 .message {
 padding: 12px;
 border-radius: 8px;
@@ -396,6 +400,19 @@ animation: pulse 2s infinite;
 @keyframes pulse {
 0%, 100% { opacity: 1; }
 50% { opacity: 0.5; }
+}
+.loading-spinner {
+display: inline-block;
+width: 16px;
+height: 16px;
+border: 2px solid rgba(255,255,255,0.3);
+border-radius: 50%;
+border-top-color: #fff;
+animation: spin 1s ease-in-out infinite;
+margin-right: 8px;
+}
+@keyframes spin {
+to { transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -605,6 +622,7 @@ const db = getDatabase(app);
 // Глобальные переменные
 let activists = [];
 let isDataLoaded = false;
+let isSubmitting = false;
 
 const editorAccounts = {
   predsedatel: { password: "chairman", name: "Председатель совета обучающихся" },
@@ -641,7 +659,6 @@ const browseBtn = document.getElementById('browse-btn');
 
 // --- ФУНКЦИИ FIREBASE ---
 
-// Подписка на изменения в базе данных (синхронизация в реальном времени)
 function subscribeToData() {
   const activistsRef = ref(db, 'activists');
   onValue(activistsRef, (snapshot) => {
@@ -655,10 +672,11 @@ function subscribeToData() {
       activists = [];
     }
     isDataLoaded = true;
+    console.log('📊 Данные загружены:', activists.length, 'активистов');
     renderActivists();
   }, (error) => {
-    console.error("Ошибка синхронизации:", error);
-    showFormMessage('Ошибка синхронизации с сервером', 'error');
+    console.error("❌ Ошибка синхронизации:", error);
+    showFormMessage('Ошибка синхронизации с сервером: ' + error.message, 'error');
   });
 }
 
@@ -686,7 +704,6 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('ru-RU');
 }
 
-// Экспорт в Excel
 function exportToExcel() {
   if (activists.length === 0) {
     alert('Нет данных для экспорта');
@@ -721,7 +738,6 @@ function exportToExcel() {
   XLSX.writeFile(wb, `активисты_школы_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// Парсинг Excel файла
 function parseExcelFile(data) {
   const workbook = XLSX.read(data, { type: 'array' });
   const firstSheetName = workbook.SheetNames[0];
@@ -757,7 +773,6 @@ function parseExcelFile(data) {
   return result;
 }
 
-// Обработка импорта файла
 function handleFile(file) {
   const reader = new FileReader();
   reader.onload = function(e) {
@@ -777,7 +792,10 @@ function handleFile(file) {
       
       update(ref(db), updates)
         .then(() => showFormMessage(`Импортировано ${newActivists.length} активистов`, 'success'))
-        .catch(err => showFormMessage('Ошибка импорта: ' + err.message, 'error'));
+        .catch(err => {
+          console.error('Ошибка импорта:', err);
+          showFormMessage('Ошибка импорта: ' + err.message, 'error');
+        });
         
     } catch (err) {
       console.error(err);
@@ -787,7 +805,6 @@ function handleFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
-// Восстановление сессии
 function restoreSession() {
   const savedUser = localStorage.getItem('currentUser');
   if (savedUser) {
@@ -808,7 +825,6 @@ function restoreSession() {
   return false;
 }
 
-// Инициализация приложения
 async function init() {
   loginBtn.addEventListener('click', handleLogin);
   logoutBtn.addEventListener('click', handleLogout);
@@ -844,7 +860,6 @@ async function init() {
   }
 }
 
-// Рендер алфавитного фильтра
 function renderAlphabetFilter() {
   const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ';
   alphabetFilter.innerHTML = letters.split('').map(letter =>
@@ -873,7 +888,6 @@ function resetFilters() {
   renderActivists();
 }
 
-// Обработка входа
 function handleLogin(e) {
   e.preventDefault();
   const username = usernameSelect.value;
@@ -895,7 +909,6 @@ function handleLogin(e) {
   }
 }
 
-// Обработка выхода
 function handleLogout() {
   currentUser = null;
   localStorage.removeItem('currentUser');
@@ -922,9 +935,19 @@ function showFormMessage(msg, type) {
   setTimeout(() => formMessage.classList.add('hidden'), 3000);
 }
 
-// Обработка отправки формы
+// ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ АКТИВИСТА
 function handleFormSubmit(e) {
   e.preventDefault();
+  
+  // Защита от повторной отправки
+  if (isSubmitting) {
+    console.log('⚠️ Форма уже отправляется');
+    return;
+  }
+  
+  console.log('📝 Начало отправки формы');
+  
+  // Собираем данные формы
   const formData = {
     firstName: document.getElementById('first-name').value.trim(),
     lastName: document.getElementById('last-name').value.trim(),
@@ -937,50 +960,87 @@ function handleFormSubmit(e) {
     registered: document.getElementById('registered').checked
   };
 
+  console.log('📋 Данные формы:', formData);
+
+  // Валидация
   if (!formData.firstName || !formData.lastName || !formData.class || !formData.phone || !formData.email) {
-    showFormMessage('Заполните обязательные поля', 'error');
+    console.log('❌ Не заполнены обязательные поля');
+    showFormMessage('Заполните обязательные поля (Имя, Фамилия, Класс, Телефон, Email)', 'error');
     return;
   }
 
+  // Блокируем кнопку
+  isSubmitting = true;
+  formSubmitBtn.disabled = true;
+  formSubmitBtn.innerHTML = '<span class="loading-spinner"></span>Сохранение...';
+
   const editId = editIdInput.value;
-  const activistsRef = ref(db, 'activists');
+  console.log('🔍 ID редактирования:', editId);
 
   if (editId) {
+    // Обновление существующего
+    console.log('✏️ Обновление активиста:', editId);
     update(ref(db, 'activists/' + editId), formData)
       .then(() => {
+        console.log('✅ Успешно обновлено');
         editIdInput.value = '';
         formTitle.textContent = 'Добавить активиста';
         formSubmitBtn.textContent = 'Добавить активиста';
         activistForm.reset();
-        showFormMessage('Обновлено!', 'success');
+        showFormMessage('Активист успешно обновлён!', 'success');
       })
-      .catch(err => showFormMessage('Ошибка: ' + err.message, 'error'));
+      .catch(err => {
+        console.error('❌ Ошибка обновления:', err);
+        showFormMessage('Ошибка обновления: ' + err.message, 'error');
+      })
+      .finally(() => {
+        isSubmitting = false;
+        formSubmitBtn.disabled = false;
+      });
   } else {
+    // Добавление нового
+    console.log('➕ Добавление нового активиста');
     const newActivist = {
       ...formData,
       archived: false,
       dateAdded: new Date().toISOString()
     };
-    push(activistsRef, newActivist)
+    
+    push(ref(db, 'activists'), newActivist)
       .then(() => {
+        console.log('✅ Успешно добавлено');
         activistForm.reset();
-        showFormMessage('Добавлен!', 'success');
+        showFormMessage('Активист успешно добавлен!', 'success');
       })
-      .catch(err => showFormMessage('Ошибка: ' + err.message, 'error'));
+      .catch(err => {
+        console.error('❌ Ошибка добавления:', err);
+        showFormMessage('Ошибка добавления: ' + err.message, 'error');
+      })
+      .finally(() => {
+        isSubmitting = false;
+        formSubmitBtn.disabled = false;
+        formSubmitBtn.textContent = 'Добавить активиста';
+      });
   }
 }
 
-// Архивация активиста
 function archiveActivist(activistId) {
+  console.log('📦 Архивация:', activistId);
   update(ref(db, 'activists/' + activistId), { archived: true })
     .then(() => showFormMessage('Перемещён в архив', 'success'))
-    .catch(err => alert(err.message));
+    .catch(err => {
+      console.error('Ошибка архивации:', err);
+      alert(err.message);
+    });
 }
 
-// Редактирование активиста
 function editActivist(activistId) {
+  console.log('✏️ Редактирование:', activistId);
   const activist = activists.find(a => a.id === activistId);
-  if (!activist) return;
+  if (!activist) {
+    console.error('Активист не найден:', activistId);
+    return;
+  }
   document.getElementById('first-name').value = activist.firstName;
   document.getElementById('last-name').value = activist.lastName;
   document.getElementById('middle-name').value = activist.middleName || '';
@@ -996,16 +1056,18 @@ function editActivist(activistId) {
   window.scrollTo(0, 0);
 }
 
-// Удаление активиста
 function deleteActivist(activistId) {
   if(!confirm('Вы уверены? Это действие нельзя отменить.')) return;
   
+  console.log('🗑️ Удаление:', activistId);
   remove(ref(db, 'activists/' + activistId))
     .then(() => showFormMessage('Удалён навсегда', 'success'))
-    .catch(err => alert(err.message));
+    .catch(err => {
+      console.error('Ошибка удаления:', err);
+      alert(err.message);
+    });
 }
 
-// Рендер списка активистов
 function renderActivists() {
   if (!isDataLoaded && !currentUser) return;
 
