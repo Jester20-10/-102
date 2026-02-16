@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Активисты Школы</title>
-<!-- SheetJS for Excel support -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
@@ -20,400 +19,72 @@
 --archive: #6b7280;
 --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-body {
-background-color: #f3f4f6;
-color: var(--text);
-line-height: 1.6;
-}
-.container {
-max-width: 1200px;
-margin: 0 auto;
-padding: 20px;
-}
-header {
-background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-color: white;
-padding: 20px 0;
-margin-bottom: 30px;
-border-radius: 0 0 12px 12px;
-box-shadow: var(--card-shadow);
-}
-.header-content {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 0 20px;
-}
-.logo {
-font-size: 24px;
-font-weight: bold;
-}
-.auth-section {
-display: flex;
-gap: 15px;
-align-items: center;
-}
-.user-info {
-display: flex;
-align-items: center;
-gap: 10px;
-}
-.logout-btn {
-background: rgba(255, 255, 255, 0.2);
-border: none;
-color: white;
-padding: 8px 16px;
-border-radius: 6px;
-cursor: pointer;
-transition: background 0.2s;
-}
-.logout-btn:hover {
-background: rgba(255, 255, 255, 0.3);
-}
-.main-content {
-display: grid;
-grid-template-columns: 1fr 380px;
-gap: 30px;
-}
-@media (max-width: 900px) {
-.main-content {
-grid-template-columns: 1fr;
-}
-}
-.activists-list {
-background: white;
-border-radius: 12px;
-padding: 25px;
-box-shadow: var(--card-shadow);
-}
-.section-title {
-font-size: 22px;
-margin-bottom: 20px;
-padding-bottom: 10px;
-border-bottom: 2px solid var(--border);
-color: var(--primary-dark);
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.section-actions {
-display: flex;
-gap: 10px;
-}
-.section-actions button {
-background: var(--primary);
-color: white;
-border: none;
-padding: 6px 12px;
-border-radius: 6px;
-font-size: 14px;
-cursor: pointer;
-}
-.filters {
-display: flex;
-gap: 12px;
-margin-bottom: 20px;
-flex-wrap: wrap;
-}
-.filter-group {
-flex: 1;
-min-width: 150px;
-}
-.filter-label {
-display: block;
-margin-bottom: 8px;
-font-weight: 600;
-color: var(--text-light);
-font-size: 13px;
-}
-.filter-input, .filter-select {
-width: 100%;
-padding: 10px 12px;
-border: 1px solid var(--border);
-border-radius: 8px;
-font-size: 14px;
-}
-.alphabet-filter {
-display: flex;
-flex-wrap: wrap;
-gap: 6px;
-margin-top: 10px;
-margin-bottom: 15px;
-}
-.alphabet-btn {
-width: 32px;
-height: 32px;
-border: 1px solid var(--border);
-background: white;
-border-radius: 6px;
-font-weight: 600;
-cursor: pointer;
-display: flex;
-align-items: center;
-justify-content: center;
-}
-.alphabet-btn.active {
-background: var(--primary);
-color: white;
-border-color: var(--primary);
-}
-.activist-card {
-background: var(--secondary);
-border: 1px solid var(--border);
-border-radius: 10px;
-padding: 20px;
-margin-bottom: 15px;
-transition: transform 0.2s, box-shadow 0.2s;
-position: relative;
-opacity: 1;
-}
-.activist-card.archived {
-opacity: 0.6;
-border-left: 4px solid var(--archive);
-}
-.activist-card:hover {
-transform: translateY(-2px);
-box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
-}
-.action-btn {
-background: var(--danger);
-color: white;
-border: none;
-padding: 4px 10px;
-border-radius: 20px;
-cursor: pointer;
-font-size: 12px;
-font-weight: 600;
-margin-left: 8px;
-opacity: 0;
-transition: opacity 0.2s;
-}
-.activist-card:hover .action-btn {
-opacity: 1;
-}
-.edit-btn {
-background: var(--warning);
-}
-.archive-btn {
-background: var(--archive);
-}
-.registration-status {
-display: inline-flex;
-align-items: center;
-gap: 8px;
-}
-.activist-header {
-display: flex;
-justify-content: space-between;
-margin-bottom: 12px;
-align-items: flex-start;
-}
-.activist-name {
-font-size: 18px;
-font-weight: 700;
-color: var(--primary-dark);
-display: flex;
-align-items: center;
-gap: 10px;
-}
-.badge {
-background: var(--primary);
-color: white;
-padding: 2px 8px;
-border-radius: 12px;
-font-size: 12px;
-font-weight: 600;
-}
-.activist-details {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-gap: 12px;
-}
-.detail-item {
-display: flex;
-flex-direction: column;
-}
-.detail-label {
-font-size: 12px;
-color: var(--text-light);
-margin-bottom: 4px;
-}
-.detail-value {
-font-weight: 600;
-}
-.registered {
-background: rgba(16, 185, 129, 0.15);
-color: var(--success);
-padding: 4px 10px;
-border-radius: 20px;
-font-size: 12px;
-font-weight: 600;
-}
-.not-registered {
-background: rgba(239, 68, 68, 0.15);
-color: var(--danger);
-padding: 4px 10px;
-border-radius: 20px;
-font-size: 12px;
-font-weight: 600;
-}
-.archived-status {
-background: rgba(107, 114, 128, 0.15);
-color: var(--archive);
-padding: 4px 10px;
-border-radius: 20px;
-font-size: 12px;
-font-weight: 600;
-}
-.form-section {
-background: white;
-border-radius: 12px;
-padding: 25px;
-box-shadow: var(--card-shadow);
-height: fit-content;
-}
-.form-group {
-margin-bottom: 20px;
-}
-.form-label {
-display: block;
-margin-bottom: 8px;
-font-weight: 600;
-color: var(--text);
-}
-.form-input, .form-select, .form-textarea {
-width: 100%;
-padding: 12px;
-border: 1px solid var(--border);
-border-radius: 8px;
-font-size: 14px;
-}
-.form-textarea {
-min-height: 80px;
-resize: vertical;
-}
-.form-checkbox {
-display: flex;
-align-items: center;
-gap: 10px;
-margin-top: 8px;
-}
-.submit-btn, .import-export-btn {
-background: var(--primary);
-color: white;
-border: none;
-padding: 12px 24px;
-border-radius: 8px;
-font-size: 16px;
-font-weight: 600;
-cursor: pointer;
-width: 100%;
-transition: background 0.2s;
-margin-top: 10px;
-}
-.submit-btn:hover, .import-export-btn:hover {
-background: var(--primary-dark);
-}
-.submit-btn:disabled {
-background: var(--text-light);
-cursor: not-allowed;
-}
-.message {
-padding: 12px;
-border-radius: 8px;
-margin-bottom: 20px;
-text-align: center;
-font-weight: 600;
-}
-.error {
-background: rgba(239, 68, 68, 0.15);
-color: var(--danger);
-border: 1px solid var(--danger);
-}
-.success {
-background: rgba(16, 185, 129, 0.15);
-color: var(--success);
-border: 1px solid var(--success);
-}
-.login-form {
-background: white;
-border-radius: 12px;
-padding: 30px;
-box-shadow: var(--card-shadow);
-max-width: 400px;
-margin: 50px auto;
-}
-.login-title {
-text-align: center;
-margin-bottom: 25px;
-color: var(--primary-dark);
-font-size: 24px;
-}
-.hidden {
-display: none;
-}
-.empty-state {
-text-align: center;
-padding: 40px 20px;
-color: var(--text-light);
-}
-.empty-state h3 {
-margin-bottom: 10px;
-color: var(--text);
-}
-.excel-drop-area {
-border: 2px dashed var(--border);
-border-radius: 8px;
-padding: 20px;
-text-align: center;
-margin-top: 15px;
-background: var(--secondary);
-transition: border-color 0.2s;
-}
-.excel-drop-area.dragover {
-border-color: var(--primary);
-background: rgba(37, 99, 235, 0.05);
-}
-#file-input {
-display: none;
-}
-.sync-status {
-display: inline-flex;
-align-items: center;
-gap: 6px;
-font-size: 12px;
-color: var(--text-light);
-}
-.sync-dot {
-width: 8px;
-height: 8px;
-border-radius: 50%;
-background: var(--success);
-animation: pulse 2s infinite;
-}
-@keyframes pulse {
-0%, 100% { opacity: 1; }
-50% { opacity: 0.5; }
-}
-.loading-spinner {
-display: inline-block;
-width: 16px;
-height: 16px;
-border: 2px solid rgba(255,255,255,0.3);
-border-radius: 50%;
-border-top-color: #fff;
-animation: spin 1s ease-in-out infinite;
-margin-right: 8px;
-}
-@keyframes spin {
-to { transform: rotate(360deg); }
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #f3f4f6; color: var(--text); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px 0; margin-bottom: 30px; border-radius: 0 0 12px 12px; box-shadow: var(--card-shadow); }
+.header-content { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+.logo { font-size: 24px; font-weight: bold; }
+.auth-section { display: flex; gap: 15px; align-items: center; }
+.user-info { display: flex; align-items: center; gap: 10px; }
+.logout-btn { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+.logout-btn:hover { background: rgba(255, 255, 255, 0.3); }
+.main-content { display: grid; grid-template-columns: 1fr 380px; gap: 30px; }
+@media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
+.activists-list { background: white; border-radius: 12px; padding: 25px; box-shadow: var(--card-shadow); }
+.section-title { font-size: 22px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); color: var(--primary-dark); display: flex; justify-content: space-between; align-items: center; }
+.section-actions { display: flex; gap: 10px; }
+.section-actions button { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-group { flex: 1; min-width: 150px; }
+.filter-label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-light); font-size: 13px; }
+.filter-input, .filter-select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+.alphabet-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; margin-bottom: 15px; }
+.alphabet-btn { width: 32px; height: 32px; border: 1px solid var(--border); background: white; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.alphabet-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.activist-card { background: var(--secondary); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 15px; transition: transform 0.2s, box-shadow 0.2s; position: relative; opacity: 1; }
+.activist-card.archived { opacity: 0.6; border-left: 4px solid var(--archive); }
+.activist-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1); }
+.action-btn { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 8px; opacity: 0; transition: opacity 0.2s; }
+.activist-card:hover .action-btn { opacity: 1; }
+.edit-btn { background: var(--warning); }
+.archive-btn { background: var(--archive); }
+.registration-status { display: inline-flex; align-items: center; gap: 8px; }
+.activist-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: flex-start; }
+.activist-name { font-size: 18px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; }
+.badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.activist-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.detail-item { display: flex; flex-direction: column; }
+.detail-label { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+.detail-value { font-weight: 600; }
+.registered { background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.not-registered { background: rgba(239, 68, 68, 0.15); color: var(--danger); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.archived-status { background: rgba(107, 114, 128, 0.15); color: var(--archive); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.form-section { background: white; border-radius: 12px; padding: 25px; box-shadow: var(--card-shadow); height: fit-content; }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text); }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+.form-textarea { min-height: 80px; resize: vertical; }
+.form-checkbox { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.submit-btn, .import-export-btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s; margin-top: 10px; }
+.submit-btn:hover, .import-export-btn:hover { background: var(--primary-dark); }
+.submit-btn:disabled { background: var(--text-light); cursor: not-allowed; }
+.message { padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 600; }
+.error { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+.success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+.login-form { background: white; border-radius: 12px; padding: 30px; box-shadow: var(--card-shadow); max-width: 400px; margin: 50px auto; }
+.login-title { text-align: center; margin-bottom: 25px; color: var(--primary-dark); font-size: 24px; }
+.hidden { display: none; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+.empty-state h3 { margin-bottom: 10px; color: var(--text); }
+.excel-drop-area { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; margin-top: 15px; background: var(--secondary); transition: border-color 0.2s; }
+.excel-drop-area.dragover { border-color: var(--primary); background: rgba(37, 99, 235, 0.05); }
+#file-input { display: none; }
+.sync-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-light); }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -493,12 +164,8 @@ to { transform: rotate(360deg); }
 </select>
 </div>
 </div>
-<div class="alphabet-filter" id="alphabet-filter">
-<!-- Generated by JS -->
-</div>
-<div id="activists-container">
-<!-- Activists will be rendered here -->
-</div>
+<div class="alphabet-filter" id="alphabet-filter"></div>
+<div id="activists-container"></div>
 </div>
 <div class="form-section">
 <h2 class="section-title" id="form-title">Добавить активиста</h2>
@@ -521,41 +188,13 @@ to { transform: rotate(360deg); }
 <label for="class" class="form-label">Класс *</label>
 <select id="class" class="form-select" required>
 <option value="">Выберите класс</option>
-<option value="5А">5А</option>
-<option value="5Б">5Б</option>
-<option value="5В">5В</option>
-<option value="5Г">5Г</option>
-<option value="5Д">5Д</option>
-<option value="5Е">5Е</option>
-<option value="5М">5М</option>
-<option value="6А">6А</option>
-<option value="6Б">6Б</option>
-<option value="6В">6В</option>
-<option value="6Г">6Г</option>
-<option value="6Д">6Д</option>
-<option value="6Е">6Е</option>
-<option value="7А">7А</option>
-<option value="7Б">7Б</option>
-<option value="7В">7В</option>
-<option value="7Г">7Г</option>
-<option value="7Д">7Д</option>
-<option value="7Е">7Е</option>
-<option value="8А">8А</option>
-<option value="8Б">8Б</option>
-<option value="8В">8В</option>
-<option value="8Г">8Г</option>
-<option value="8Д">8Д</option>
-<option value="8Е">8Е</option>
-<option value="9А">9А</option>
-<option value="9Б">9Б</option>
-<option value="9В">9В</option>
-<option value="9Г">9Г</option>
-<option value="9Д">9Д</option>
-<option value="9Е">9Е</option>
-<option value="10А">10А</option>
-<option value="10Б">10Б</option>
-<option value="11А">11А</option>
-<option value="11Б">11Б</option>
+<option value="5А">5А</option><option value="5Б">5Б</option><option value="5В">5В</option><option value="5Г">5Г</option><option value="5Д">5Д</option><option value="5Е">5Е</option><option value="5М">5М</option>
+<option value="6А">6А</option><option value="6Б">6Б</option><option value="6В">6В</option><option value="6Г">6Г</option><option value="6Д">6Д</option><option value="6Е">6Е</option>
+<option value="7А">7А</option><option value="7Б">7Б</option><option value="7В">7В</option><option value="7Г">7Г</option><option value="7Д">7Д</option><option value="7Е">7Е</option>
+<option value="8А">8А</option><option value="8Б">8Б</option><option value="8В">8В</option><option value="8Г">8Г</option><option value="8Д">8Д</option><option value="8Е">8Е</option>
+<option value="9А">9А</option><option value="9Б">9Б</option><option value="9В">9В</option><option value="9Г">9Г</option><option value="9Д">9Д</option><option value="9Е">9Е</option>
+<option value="10А">10А</option><option value="10Б">10Б</option>
+<option value="11А">11А</option><option value="11Б">11Б</option>
 </select>
 </div>
 <div class="form-group">
@@ -600,11 +239,9 @@ to { transform: rotate(360deg); }
 </div>
 
 <script type="module">
-// Импорт функций Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// --- КОНФИГУРАЦИЯ FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyD-6FhGeq3uC06NwQC_S6t1cdjwcREe_OE",
   authDomain: "schoolactivists-856eb.firebaseapp.com",
@@ -615,11 +252,9 @@ const firebaseConfig = {
   measurementId: "G-2N86E0NVJC"
 };
 
-// Инициализация Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Глобальные переменные
 let activists = [];
 let isDataLoaded = false;
 let isSubmitting = false;
@@ -631,7 +266,6 @@ const editorAccounts = {
 };
 let currentUser = null;
 
-// DOM Elements
 const loginScreen = document.getElementById('login-screen');
 const mainApp = document.getElementById('main-app');
 const loginBtn = document.getElementById('login-btn');
@@ -657,30 +291,22 @@ const dropArea = document.getElementById('drop-area');
 const fileInput = document.getElementById('file-input');
 const browseBtn = document.getElementById('browse-btn');
 
-// --- ФУНКЦИИ FIREBASE ---
-
 function subscribeToData() {
   const activistsRef = ref(db, 'activists');
   onValue(activistsRef, (snapshot) => {
     const data = snapshot.val();
     if (data) {
-      activists = Object.keys(data).map(key => ({
-        id: key,
-        ...data[key]
-      }));
+      activists = Object.keys(data).map(key => ({ id: key, ...data[key] }));
     } else {
       activists = [];
     }
     isDataLoaded = true;
-    console.log('📊 Данные загружены:', activists.length, 'активистов');
     renderActivists();
   }, (error) => {
-    console.error("❌ Ошибка синхронизации:", error);
-    showFormMessage('Ошибка синхронизации с сервером: ' + error.message, 'error');
+    console.error("Ошибка синхронизации:", error);
+    showFormMessage('Ошибка подключения к базе данных', 'error');
   });
 }
-
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
 function escapeHtml(text) {
   if (!text) return '';
@@ -700,48 +326,25 @@ function getGradeRange(className) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('ru-RU');
+  return new Date(dateStr).toLocaleDateString('ru-RU');
 }
 
 function exportToExcel() {
-  if (activists.length === 0) {
-    alert('Нет данных для экспорта');
-    return;
-  }
-  if (typeof XLSX === 'undefined') {
-    alert('Библиотека SheetJS не загружена. Проверьте подключение интернета.');
-    return;
-  }
-  
-  const wsData = [
-    ['Фамилия', 'Имя', 'Отчество', 'Класс', 'Телефон', 'Email', 'Роль', 'Классный руководитель', 'Зарегистрирован', 'Статус', 'Дата добавления']
-  ];
+  if (activists.length === 0) { alert('Нет данных'); return; }
+  if (typeof XLSX === 'undefined') { alert('Библиотека не загружена'); return; }
+  const wsData = [['Фамилия', 'Имя', 'Отчество', 'Класс', 'Телефон', 'Email', 'Роль', 'Куратор', 'Зарегистрирован', 'Статус', 'Дата']];
   activists.forEach(a => {
-    wsData.push([
-      a.lastName,
-      a.firstName,
-      a.middleName || '',
-      a.class,
-      a.phone,
-      a.email,
-      a.role || '',
-      a.curator || '',
-      a.registered ? 'Да' : 'Нет',
-      a.archived ? 'Архив' : 'Активен',
-      formatDate(a.dateAdded)
-    ]);
+    wsData.push([a.lastName, a.firstName, a.middleName || '', a.class, a.phone, a.email, a.role || '', a.curator || '', a.registered ? 'Да' : 'Нет', a.archived ? 'Архив' : 'Активен', formatDate(a.dateAdded)]);
   });
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Активисты');
-  XLSX.writeFile(wb, `активисты_школы_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb, `активисты_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function parseExcelFile(data) {
   const workbook = XLSX.read(data, { type: 'array' });
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
   if (jsonData.length < 2) return [];
   const headers = jsonData[0].map(h => h.toString().trim());
@@ -753,20 +356,12 @@ function parseExcelFile(data) {
     for (let j = 0; j < headers.length && j < row.length; j++) {
       obj[headers[j]] = row[j] != null ? row[j].toString().trim() : '';
     }
-    if (!obj['Фамилия'] || !obj['Имя'] || !obj['Класс'] || !obj['Телефон'] || !obj['Email']) {
-      continue;
-    }
+    if (!obj['Фамилия'] || !obj['Имя'] || !obj['Класс'] || !obj['Телефон'] || !obj['Email']) continue;
     result.push({
-      lastName: obj['Фамилия'] || '',
-      firstName: obj['Имя'] || '',
-      middleName: obj['Отчество'] || '',
-      class: obj['Класс'] || '',
-      phone: obj['Телефон'] || '',
-      email: obj['Email'] || '',
-      role: obj['Роль'] || '',
-      curator: obj['Классный руководитель'] || '',
-      registered: obj['Зарегистрирован'] === 'Да',
-      archived: obj['Статус'] === 'Архив',
+      lastName: obj['Фамилия'] || '', firstName: obj['Имя'] || '', middleName: obj['Отчество'] || '',
+      class: obj['Класс'] || '', phone: obj['Телефон'] || '', email: obj['Email'] || '',
+      role: obj['Роль'] || '', curator: obj['Классный руководитель'] || '',
+      registered: obj['Зарегистрирован'] === 'Да', archived: obj['Статус'] === 'Архив',
       dateAdded: new Date().toISOString()
     });
   }
@@ -779,27 +374,17 @@ function handleFile(file) {
     try {
       const data = new Uint8Array(e.target.result);
       const newActivists = parseExcelFile(data);
-      if (newActivists.length === 0) {
-        showFormMessage('Не удалось распознать данные', 'error');
-        return;
-      }
-      
+      if (newActivists.length === 0) { showFormMessage('Нет данных', 'error'); return; }
       const updates = {};
       newActivists.forEach(act => {
         const newKey = push(ref(db, 'activists')).key;
         updates['/activists/' + newKey] = act;
       });
-      
       update(ref(db), updates)
-        .then(() => showFormMessage(`Импортировано ${newActivists.length} активистов`, 'success'))
-        .catch(err => {
-          console.error('Ошибка импорта:', err);
-          showFormMessage('Ошибка импорта: ' + err.message, 'error');
-        });
-        
+        .then(() => showFormMessage(`Импортировано ${newActivists.length}`, 'success'))
+        .catch(err => showFormMessage('Ошибка: ' + err.message, 'error'));
     } catch (err) {
-      console.error(err);
-      showFormMessage('Ошибка при чтении файла', 'error');
+      showFormMessage('Ошибка файла', 'error');
     }
   };
   reader.readAsArrayBuffer(file);
@@ -818,9 +403,7 @@ function restoreSession() {
         subscribeToData();
         return true;
       }
-    } catch (e) {
-      console.warn('Invalid session');
-    }
+    } catch (e) { console.warn('Invalid session'); }
   }
   return false;
 }
@@ -836,23 +419,14 @@ async function init() {
   exportBtn.addEventListener('click', exportToExcel);
   resetFiltersBtn.addEventListener('click', resetFilters);
   browseBtn.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) handleFile(e.target.files[0]);
-  });
-
-  dropArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropArea.classList.add('dragover');
-  });
+  fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+  dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('dragover'); });
   dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
   dropArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropArea.classList.remove('dragover');
+    e.preventDefault(); dropArea.classList.remove('dragover');
     if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
   });
-
   renderAlphabetFilter();
-  
   const sessionRestored = restoreSession();
   if (!sessionRestored) {
     loginScreen.classList.remove('hidden');
@@ -862,9 +436,7 @@ async function init() {
 
 function renderAlphabetFilter() {
   const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ';
-  alphabetFilter.innerHTML = letters.split('').map(letter =>
-    `<button class="alphabet-btn" data-letter="${letter}">${letter}</button>`
-  ).join('');
+  alphabetFilter.innerHTML = letters.split('').map(letter => `<button class="alphabet-btn" data-letter="${letter}">${letter}</button>`).join('');
   alphabetFilter.querySelectorAll('.alphabet-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       alphabetFilter.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
@@ -880,10 +452,7 @@ function getActiveLetter() {
 }
 
 function resetFilters() {
-  searchInput.value = '';
-  sortBySelect.value = 'name';
-  statusFilter.value = 'all';
-  gradeFilter.value = 'all';
+  searchInput.value = ''; sortBySelect.value = 'name'; statusFilter.value = 'all'; gradeFilter.value = 'all';
   alphabetFilter.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
   renderActivists();
 }
@@ -892,10 +461,7 @@ function handleLogin(e) {
   e.preventDefault();
   const username = usernameSelect.value;
   const password = passwordInput.value;
-  if (!username || !password) {
-    showLoginMessage('Заполните все поля', 'error');
-    return;
-  }
+  if (!username || !password) { showLoginMessage('Заполните все поля', 'error'); return; }
   if (editorAccounts[username] && editorAccounts[username].password === password) {
     currentUser = { username, name: editorAccounts[username].name };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -914,8 +480,7 @@ function handleLogout() {
   localStorage.removeItem('currentUser');
   mainApp.classList.add('hidden');
   loginScreen.classList.remove('hidden');
-  usernameSelect.value = '';
-  passwordInput.value = '';
+  usernameSelect.value = ''; passwordInput.value = '';
   loginMessage.classList.add('hidden');
   activists = [];
   renderActivists();
@@ -935,19 +500,16 @@ function showFormMessage(msg, type) {
   setTimeout(() => formMessage.classList.add('hidden'), 3000);
 }
 
-// ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ АКТИВИСТА
+function resetFormState() {
+  isSubmitting = false;
+  formSubmitBtn.disabled = false;
+  formSubmitBtn.textContent = 'Добавить активиста';
+}
+
 function handleFormSubmit(e) {
   e.preventDefault();
-  
-  // Защита от повторной отправки
-  if (isSubmitting) {
-    console.log('⚠️ Форма уже отправляется');
-    return;
-  }
-  
-  console.log('📝 Начало отправки формы');
-  
-  // Собираем данные формы
+  if (isSubmitting) return;
+
   const formData = {
     firstName: document.getElementById('first-name').value.trim(),
     lastName: document.getElementById('last-name').value.trim(),
@@ -960,87 +522,57 @@ function handleFormSubmit(e) {
     registered: document.getElementById('registered').checked
   };
 
-  console.log('📋 Данные формы:', formData);
-
-  // Валидация
   if (!formData.firstName || !formData.lastName || !formData.class || !formData.phone || !formData.email) {
-    console.log('❌ Не заполнены обязательные поля');
-    showFormMessage('Заполните обязательные поля (Имя, Фамилия, Класс, Телефон, Email)', 'error');
+    showFormMessage('Заполните обязательные поля', 'error');
     return;
   }
 
-  // Блокируем кнопку
   isSubmitting = true;
   formSubmitBtn.disabled = true;
   formSubmitBtn.innerHTML = '<span class="loading-spinner"></span>Сохранение...';
 
   const editId = editIdInput.value;
-  console.log('🔍 ID редактирования:', editId);
 
-  if (editId) {
-    // Обновление существующего
-    console.log('✏️ Обновление активиста:', editId);
-    update(ref(db, 'activists/' + editId), formData)
-      .then(() => {
-        console.log('✅ Успешно обновлено');
+  // Тайм-аут на 10 секунд
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Превышено время ожидания ответа от сервера')), 10000);
+  });
+
+  const operationPromise = editId 
+    ? update(ref(db, 'activists/' + editId), formData)
+    : push(ref(db, 'activists'), { ...formData, archived: false, dateAdded: new Date().toISOString() });
+
+  Promise.race([operationPromise, timeoutPromise])
+    .then(() => {
+      if (editId) {
         editIdInput.value = '';
         formTitle.textContent = 'Добавить активиста';
         formSubmitBtn.textContent = 'Добавить активиста';
         activistForm.reset();
-        showFormMessage('Активист успешно обновлён!', 'success');
-      })
-      .catch(err => {
-        console.error('❌ Ошибка обновления:', err);
-        showFormMessage('Ошибка обновления: ' + err.message, 'error');
-      })
-      .finally(() => {
-        isSubmitting = false;
-        formSubmitBtn.disabled = false;
-      });
-  } else {
-    // Добавление нового
-    console.log('➕ Добавление нового активиста');
-    const newActivist = {
-      ...formData,
-      archived: false,
-      dateAdded: new Date().toISOString()
-    };
-    
-    push(ref(db, 'activists'), newActivist)
-      .then(() => {
-        console.log('✅ Успешно добавлено');
+        showFormMessage('Обновлено!', 'success');
+      } else {
         activistForm.reset();
-        showFormMessage('Активист успешно добавлен!', 'success');
-      })
-      .catch(err => {
-        console.error('❌ Ошибка добавления:', err);
-        showFormMessage('Ошибка добавления: ' + err.message, 'error');
-      })
-      .finally(() => {
-        isSubmitting = false;
-        formSubmitBtn.disabled = false;
-        formSubmitBtn.textContent = 'Добавить активиста';
-      });
-  }
-}
-
-function archiveActivist(activistId) {
-  console.log('📦 Архивация:', activistId);
-  update(ref(db, 'activists/' + activistId), { archived: true })
-    .then(() => showFormMessage('Перемещён в архив', 'success'))
+        showFormMessage('Добавлен!', 'success');
+      }
+    })
     .catch(err => {
-      console.error('Ошибка архивации:', err);
-      alert(err.message);
+      console.error('Ошибка Firebase:', err);
+      showFormMessage('Ошибка: ' + err.message + '. Проверьте правила Firebase!', 'error');
+    })
+    .finally(() => {
+      resetFormState();
     });
 }
 
+function archiveActivist(activistId) {
+  update(ref(db, 'activists/' + activistId), { archived: true })
+    .then(() => showFormMessage('В архив', 'success'))
+    .catch(err => alert(err.message));
+}
+
 function editActivist(activistId) {
-  console.log('✏️ Редактирование:', activistId);
   const activist = activists.find(a => a.id === activistId);
-  if (!activist) {
-    console.error('Активист не найден:', activistId);
-    return;
-  }
+  if (!activist) return;
   document.getElementById('first-name').value = activist.firstName;
   document.getElementById('last-name').value = activist.lastName;
   document.getElementById('middle-name').value = activist.middleName || '';
@@ -1057,20 +589,14 @@ function editActivist(activistId) {
 }
 
 function deleteActivist(activistId) {
-  if(!confirm('Вы уверены? Это действие нельзя отменить.')) return;
-  
-  console.log('🗑️ Удаление:', activistId);
+  if(!confirm('Вы уверены?')) return;
   remove(ref(db, 'activists/' + activistId))
-    .then(() => showFormMessage('Удалён навсегда', 'success'))
-    .catch(err => {
-      console.error('Ошибка удаления:', err);
-      alert(err.message);
-    });
+    .then(() => showFormMessage('Удалён', 'success'))
+    .catch(err => alert(err.message));
 }
 
 function renderActivists() {
   if (!isDataLoaded && !currentUser) return;
-
   const searchTerm = searchInput.value.toLowerCase();
   const sortBy = sortBySelect.value;
   const status = statusFilter.value;
@@ -1085,26 +611,19 @@ function renderActivists() {
       if (range !== grade) return false;
     }
     if (letter && (!activist.lastName || !activist.lastName.startsWith(letter))) return false;
-    
     const fullName = `${activist.lastName} ${activist.firstName} ${activist.middleName}`.toLowerCase();
     return (
-      fullName.includes(searchTerm) ||
-      activist.class.toLowerCase().includes(searchTerm) ||
-      activist.phone.toLowerCase().includes(searchTerm) ||
-      activist.email.toLowerCase().includes(searchTerm) ||
+      fullName.includes(searchTerm) || activist.class.toLowerCase().includes(searchTerm) ||
+      activist.phone.toLowerCase().includes(searchTerm) || activist.email.toLowerCase().includes(searchTerm) ||
       (activist.role && activist.role.toLowerCase().includes(searchTerm)) ||
       (activist.curator && activist.curator.toLowerCase().includes(searchTerm))
     );
   });
 
   filtered.sort((a, b) => {
-    if (sortBy === 'name') {
-      return `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`);
-    } else if (sortBy === 'class') {
-      return a.class.localeCompare(b.class);
-    } else if (sortBy === 'dateAdded') {
-      return new Date(b.dateAdded) - new Date(a.dateAdded);
-    }
+    if (sortBy === 'name') return `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`);
+    if (sortBy === 'class') return a.class.localeCompare(b.class);
+    if (sortBy === 'dateAdded') return new Date(b.dateAdded) - new Date(a.dateAdded);
     return 0;
   });
 
@@ -1116,7 +635,7 @@ function renderActivists() {
   });
 
   if (filtered.length === 0) {
-    activistsContainer.innerHTML = `<div class="empty-state"><h3>Нет активистов</h3><p>По вашему запросу ничего не найдено</p></div>`;
+    activistsContainer.innerHTML = `<div class="empty-state"><h3>Нет активистов</h3><p>Ничего не найдено</p></div>`;
     return;
   }
 
@@ -1127,12 +646,11 @@ function renderActivists() {
       const fullName = escapeHtml(`${activist.lastName} ${activist.firstName} ${activist.middleName}`);
       const roleBadge = activist.role ? `<span class="badge">${escapeHtml(activist.role)}</span>` : '';
       const statusClass = activist.archived ? 'archived' : '';
-      const statusText = activist.archived ?
-        '<span class="archived-status">В архиве</span>' :
+      const statusText = activist.archived ? '<span class="archived-status">В архиве</span>' :
         `<span class="${activist.registered ? 'registered' : 'not-registered'}">${activist.registered ? 'Зарегистрирован' : 'Не зарегистрирован'}</span>`;
 
       html += `
-      <div class="activist-card ${statusClass}" id="card-${activist.id}">
+      <div class="activist-card ${statusClass}">
         <div class="activist-header">
           <div class="activist-name">${fullName} ${roleBadge}</div>
           <div class="registration-status">
@@ -1159,7 +677,6 @@ function renderActivists() {
   activistsContainer.innerHTML = html;
 }
 
-// Глобальные функции для onclick
 window.editActivist = editActivist;
 window.archiveActivist = archiveActivist;
 window.deleteActivist = deleteActivist;
