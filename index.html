@@ -17,6 +17,7 @@
 --warning: #f59e0b;
 --danger: #ef4444;
 --archive: #6b7280;
+--birthday: #ec4899;
 --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -44,6 +45,8 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 .alphabet-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 .activist-card { background: var(--secondary); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 15px; transition: transform 0.2s, box-shadow 0.2s; position: relative; opacity: 1; }
 .activist-card.archived { opacity: 0.6; border-left: 4px solid var(--archive); }
+.activist-card.birthday-today { border-left: 4px solid var(--birthday); background: linear-gradient(135deg, #fce7f3 0%, var(--secondary) 100%); }
+.activist-card.birthday-tomorrow { border-left: 4px solid var(--warning); background: linear-gradient(135deg, #fef3c7 0%, var(--secondary) 100%); }
 .activist-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1); }
 .action-btn { background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 8px; opacity: 0; transition: opacity 0.2s; }
 .activist-card:hover .action-btn { opacity: 1; }
@@ -53,6 +56,8 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 .activist-header { display: flex; justify-content: space-between; margin-bottom: 12px; align-items: flex-start; }
 .activist-name { font-size: 18px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; }
 .badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.birthday-badge { background: var(--birthday); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.birthday-badge::before { content: '🎂'; }
 .activist-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
 .detail-item { display: flex; flex-direction: column; }
 .detail-label { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
@@ -85,6 +90,74 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Уведомления о днях рождения */
+.birthday-notifications {
+  background: linear-gradient(135deg, #fce7f3 0%, #fef3c7 100%);
+  border: 2px solid var(--birthday);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: var(--card-shadow);
+}
+.birthday-notifications h3 {
+  color: var(--birthday);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+.birthday-notifications h3::before {
+  content: '🎉';
+  font-size: 24px;
+}
+.birthday-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.birthday-item {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid var(--birthday);
+}
+.birthday-item.tomorrow {
+  border-left-color: var(--warning);
+}
+.birthday-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.birthday-item-name {
+  font-weight: 600;
+  color: var(--text);
+}
+.birthday-item-date {
+  font-size: 12px;
+  color: var(--text-light);
+}
+.birthday-item-age {
+  background: var(--birthday);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.birthday-item-age.tomorrow {
+  background: var(--warning);
+}
+.no-birthdays {
+  text-align: center;
+  color: var(--text-light);
+  padding: 20px;
+}
 </style>
 </head>
 <body>
@@ -133,6 +206,13 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 <button id="export-btn">Экспорт Excel</button>
 </div>
 </div>
+
+<!-- Уведомления о днях рождения -->
+<div id="birthday-notifications" class="birthday-notifications hidden">
+<h3>🎉 Дни рождения</h3>
+<div id="birthday-list" class="birthday-list"></div>
+</div>
+
 <div class="filters">
 <div class="filter-group">
 <label class="filter-label">Поиск</label>
@@ -144,6 +224,7 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 <option value="name">Имени</option>
 <option value="class">Классу</option>
 <option value="dateAdded">Дате добавления</option>
+<option value="birthday">Дню рождения</option>
 </select>
 </div>
 <div class="filter-group">
@@ -183,6 +264,10 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 <div class="form-group">
 <label for="middle-name" class="form-label">Отчество</label>
 <input type="text" id="middle-name" class="form-input">
+</div>
+<div class="form-group">
+<label for="birth-date" class="form-label">Дата рождения</label>
+<input type="date" id="birth-date" class="form-input">
 </div>
 <div class="form-group">
 <label for="class" class="form-label">Класс *</label>
@@ -230,7 +315,7 @@ header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)
 <input type="file" id="file-input" accept=".xlsx, .xls">
 </div>
 <p style="font-size: 12px; color: var(--text-light); margin-top: 10px;">
-Ожидаемые столбцы: Фамилия, Имя, Отчество, Класс, Телефон, Email, Роль, Классный руководитель, Зарегистрирован
+Ожидаемые столбцы: Фамилия, Имя, Отчество, Дата рождения, Класс, Телефон, Email, Роль, Классный руководитель, Зарегистрирован
 </p>
 </div>
 </div>
@@ -290,6 +375,112 @@ const resetFiltersBtn = document.getElementById('reset-filters-btn');
 const dropArea = document.getElementById('drop-area');
 const fileInput = document.getElementById('file-input');
 const browseBtn = document.getElementById('browse-btn');
+const birthdayNotifications = document.getElementById('birthday-notifications');
+const birthdayList = document.getElementById('birthday-list');
+
+// --- ФУНКЦИИ ДЛЯ ДНЕЙ РОЖДЕНИЯ ---
+
+function getBirthdays() {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const todayMonth = today.getMonth();
+  const todayDay = today.getDate();
+  const tomorrowMonth = tomorrow.getMonth();
+  const tomorrowDay = tomorrow.getDate();
+  
+  const birthdaysToday = [];
+  const birthdaysTomorrow = [];
+  
+  activists.forEach(activist => {
+    if (!activist.birthDate) return;
+    
+    const birthDate = new Date(activist.birthDate);
+    const birthMonth = birthDate.getMonth();
+    const birthDay = birthDate.getDate();
+    
+    // День рождения сегодня
+    if (birthMonth === todayMonth && birthDay === todayDay) {
+      const age = today.getFullYear() - birthDate.getFullYear();
+      birthdaysToday.push({ ...activist, age });
+    }
+    
+    // День рождения завтра
+    if (birthMonth === tomorrowMonth && birthDay === tomorrowDay) {
+      const age = tomorrow.getFullYear() - birthDate.getFullYear();
+      birthdaysTomorrow.push({ ...activist, age });
+    }
+  });
+  
+  return { today: birthdaysToday, tomorrow: birthdaysTomorrow };
+}
+
+function renderBirthdayNotifications() {
+  const birthdays = getBirthdays();
+  const hasBirthdays = birthdays.today.length > 0 || birthdays.tomorrow.length > 0;
+  
+  if (!hasBirthdays) {
+    birthdayNotifications.classList.add('hidden');
+    return;
+  }
+  
+  birthdayNotifications.classList.remove('hidden');
+  let html = '';
+  
+  // Дни рождения сегодня
+  birthdays.today.forEach(person => {
+    html += `
+      <div class="birthday-item">
+        <div class="birthday-item-info">
+          <span class="birthday-item-name">🎂 ${person.lastName} ${person.firstName}</span>
+          <span class="birthday-item-date">День рождения сегодня!</span>
+        </div>
+        <span class="birthday-item-age">Исполняется ${person.age}</span>
+      </div>
+    `;
+  });
+  
+  // Дни рождения завтра
+  birthdays.tomorrow.forEach(person => {
+    html += `
+      <div class="birthday-item tomorrow">
+        <div class="birthday-item-info">
+          <span class="birthday-item-name">🎁 ${person.lastName} ${person.firstName}</span>
+          <span class="birthday-item-date">День рождения завтра!</span>
+        </div>
+        <span class="birthday-item-age tomorrow">Исполняется ${person.age}</span>
+      </div>
+    `;
+  });
+  
+  birthdayList.innerHTML = html;
+}
+
+function calculateAge(birthDate) {
+  if (!birthDate) return null;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('ru-RU');
+}
+
+function formatBirthDate(dateStr) {
+  if (!dateStr) return 'Не указана';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// --- ОСНОВНЫЕ ФУНКЦИИ ---
 
 function subscribeToData() {
   const activistsRef = ref(db, 'activists');
@@ -301,6 +492,7 @@ function subscribeToData() {
       activists = [];
     }
     isDataLoaded = true;
+    renderBirthdayNotifications();
     renderActivists();
   }, (error) => {
     console.error("Ошибка синхронизации:", error);
@@ -324,17 +516,17 @@ function getGradeRange(className) {
   return null;
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('ru-RU');
-}
-
 function exportToExcel() {
   if (activists.length === 0) { alert('Нет данных'); return; }
   if (typeof XLSX === 'undefined') { alert('Библиотека не загружена'); return; }
-  const wsData = [['Фамилия', 'Имя', 'Отчество', 'Класс', 'Телефон', 'Email', 'Роль', 'Куратор', 'Зарегистрирован', 'Статус', 'Дата']];
+  const wsData = [['Фамилия', 'Имя', 'Отчество', 'Дата рождения', 'Возраст', 'Класс', 'Телефон', 'Email', 'Роль', 'Куратор', 'Зарегистрирован', 'Статус', 'Дата']];
   activists.forEach(a => {
-    wsData.push([a.lastName, a.firstName, a.middleName || '', a.class, a.phone, a.email, a.role || '', a.curator || '', a.registered ? 'Да' : 'Нет', a.archived ? 'Архив' : 'Активен', formatDate(a.dateAdded)]);
+    wsData.push([
+      a.lastName, a.firstName, a.middleName || '', a.birthDate || '', 
+      calculateAge(a.birthDate) || '', a.class, a.phone, a.email, 
+      a.role || '', a.curator || '', a.registered ? 'Да' : 'Нет', 
+      a.archived ? 'Архив' : 'Активен', formatDate(a.dateAdded)
+    ]);
   });
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   const wb = XLSX.utils.book_new();
@@ -357,8 +549,17 @@ function parseExcelFile(data) {
       obj[headers[j]] = row[j] != null ? row[j].toString().trim() : '';
     }
     if (!obj['Фамилия'] || !obj['Имя'] || !obj['Класс'] || !obj['Телефон'] || !obj['Email']) continue;
+    
+    // Конвертация даты из Excel
+    let birthDate = obj['Дата рождения'] || '';
+    if (birthDate && typeof birthDate === 'number') {
+      const excelDate = new Date(Math.round((birthDate - 25569)*86400*1000));
+      birthDate = excelDate.toISOString().split('T')[0];
+    }
+    
     result.push({
       lastName: obj['Фамилия'] || '', firstName: obj['Имя'] || '', middleName: obj['Отчество'] || '',
+      birthDate: birthDate,
       class: obj['Класс'] || '', phone: obj['Телефон'] || '', email: obj['Email'] || '',
       role: obj['Роль'] || '', curator: obj['Классный руководитель'] || '',
       registered: obj['Зарегистрирован'] === 'Да', archived: obj['Статус'] === 'Архив',
@@ -432,6 +633,9 @@ async function init() {
     loginScreen.classList.remove('hidden');
     mainApp.classList.add('hidden');
   }
+  
+  // Проверка дней рождения каждый час
+  setInterval(renderBirthdayNotifications, 3600000);
 }
 
 function renderAlphabetFilter() {
@@ -514,6 +718,7 @@ function handleFormSubmit(e) {
     firstName: document.getElementById('first-name').value.trim(),
     lastName: document.getElementById('last-name').value.trim(),
     middleName: document.getElementById('middle-name').value.trim(),
+    birthDate: document.getElementById('birth-date').value,
     class: document.getElementById('class').value,
     role: document.getElementById('role').value.trim(),
     curator: document.getElementById('curator').value.trim(),
@@ -533,9 +738,8 @@ function handleFormSubmit(e) {
 
   const editId = editIdInput.value;
 
-  // Тайм-аут на 10 секунд
   const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Превышено время ожидания ответа от сервера')), 10000);
+    setTimeout(() => reject(new Error('Превышено время ожидания')), 10000);
   });
 
   const operationPromise = editId 
@@ -557,7 +761,7 @@ function handleFormSubmit(e) {
     })
     .catch(err => {
       console.error('Ошибка Firebase:', err);
-      showFormMessage('Ошибка: ' + err.message + '. Проверьте правила Firebase!', 'error');
+      showFormMessage('Ошибка: ' + err.message, 'error');
     })
     .finally(() => {
       resetFormState();
@@ -576,6 +780,7 @@ function editActivist(activistId) {
   document.getElementById('first-name').value = activist.firstName;
   document.getElementById('last-name').value = activist.lastName;
   document.getElementById('middle-name').value = activist.middleName || '';
+  document.getElementById('birth-date').value = activist.birthDate || '';
   document.getElementById('class').value = activist.class;
   document.getElementById('role').value = activist.role || '';
   document.getElementById('curator').value = activist.curator || '';
@@ -624,6 +829,11 @@ function renderActivists() {
     if (sortBy === 'name') return `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`);
     if (sortBy === 'class') return a.class.localeCompare(b.class);
     if (sortBy === 'dateAdded') return new Date(b.dateAdded) - new Date(a.dateAdded);
+    if (sortBy === 'birthday') {
+      if (!a.birthDate) return 1;
+      if (!b.birthDate) return -1;
+      return new Date(a.birthDate) - new Date(b.birthDate);
+    }
     return 0;
   });
 
@@ -646,35 +856,77 @@ function renderActivists() {
       const fullName = escapeHtml(`${activist.lastName} ${activist.firstName} ${activist.middleName}`);
       const roleBadge = activist.role ? `<span class="badge">${escapeHtml(activist.role)}</span>` : '';
       const statusClass = activist.archived ? 'archived' : '';
+      
+      // Проверка дня рождения
+      const birthdayInfo = getBirthdayInfo(activist.birthDate);
+      if (birthdayInfo.isToday) {
+        html += `<div class="activist-card birthday-today ${statusClass}">`;
+      } else if (birthdayInfo.isTomorrow) {
+        html += `<div class="activist-card birthday-tomorrow ${statusClass}">`;
+      } else {
+        html += `<div class="activist-card ${statusClass}">`;
+      }
+      
       const statusText = activist.archived ? '<span class="archived-status">В архиве</span>' :
         `<span class="${activist.registered ? 'registered' : 'not-registered'}">${activist.registered ? 'Зарегистрирован' : 'Не зарегистрирован'}</span>`;
 
+      // Бейдж дня рождения
+      let birthdayBadge = '';
+      if (birthdayInfo.isToday) {
+        birthdayBadge = `<span class="birthday-badge">День рождения!</span>`;
+      } else if (birthdayInfo.isTomorrow) {
+        birthdayBadge = `<span class="birthday-badge" style="background: var(--warning);">Завтра ДР!</span>`;
+      }
+
       html += `
-      <div class="activist-card ${statusClass}">
-        <div class="activist-header">
-          <div class="activist-name">${fullName} ${roleBadge}</div>
-          <div class="registration-status">
-            ${statusText}
-            ${currentUser ? `
-              <button class="action-btn edit-btn" onclick="window.editActivist('${activist.id}')">Изменить</button>
-              ${!activist.archived ?
-                `<button class="action-btn archive-btn" onclick="window.archiveActivist('${activist.id}')">Архив</button>` :
-                `<button class="action-btn" onclick="window.deleteActivist('${activist.id}')">Удалить</button>`
-              }
-            ` : ''}
-          </div>
+      <div class="activist-header">
+        <div class="activist-name">${fullName} ${roleBadge} ${birthdayBadge}</div>
+        <div class="registration-status">
+          ${statusText}
+          ${currentUser ? `
+            <button class="action-btn edit-btn" onclick="window.editActivist('${activist.id}')">Изменить</button>
+            ${!activist.archived ?
+              `<button class="action-btn archive-btn" onclick="window.archiveActivist('${activist.id}')">Архив</button>` :
+              `<button class="action-btn" onclick="window.deleteActivist('${activist.id}')">Удалить</button>`
+            }
+          ` : ''}
         </div>
-        <div class="activist-details">
-          <div class="detail-item"><span class="detail-label">Класс</span><span class="detail-value">${escapeHtml(activist.class)}</span></div>
-          <div class="detail-item"><span class="detail-label">Телефон</span><span class="detail-value">${escapeHtml(activist.phone)}</span></div>
-          <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">${escapeHtml(activist.email)}</span></div>
-          ${activist.curator ? `<div class="detail-item"><span class="detail-label">Куратор</span><span class="detail-value">${escapeHtml(activist.curator)}</span></div>` : ''}
-          <div class="detail-item"><span class="detail-label">Добавлен</span><span class="detail-value">${formatDate(activist.dateAdded)}</span></div>
-        </div>
+      </div>
+      <div class="activist-details">
+        <div class="detail-item"><span class="detail-label">Класс</span><span class="detail-value">${escapeHtml(activist.class)}</span></div>
+        <div class="detail-item"><span class="detail-label">Телефон</span><span class="detail-value">${escapeHtml(activist.phone)}</span></div>
+        <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">${escapeHtml(activist.email)}</span></div>
+        ${activist.birthDate ? `<div class="detail-item"><span class="detail-label">Дата рождения</span><span class="detail-value">${formatBirthDate(activist.birthDate)} (${birthdayInfo.age} лет)</span></div>` : ''}
+        ${activist.curator ? `<div class="detail-item"><span class="detail-label">Куратор</span><span class="detail-value">${escapeHtml(activist.curator)}</span></div>` : ''}
+        <div class="detail-item"><span class="detail-label">Добавлен</span><span class="detail-value">${formatDate(activist.dateAdded)}</span></div>
+      </div>
       </div>`;
     });
   });
   activistsContainer.innerHTML = html;
+}
+
+function getBirthdayInfo(birthDate) {
+  if (!birthDate) return { isToday: false, isTomorrow: false, age: null };
+  
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const birth = new Date(birthDate);
+  const birthMonth = birth.getMonth();
+  const birthDay = birth.getDate();
+  
+  const isToday = birthMonth === today.getMonth() && birthDay === today.getDate();
+  const isTomorrow = birthMonth === tomorrow.getMonth() && birthDay === tomorrow.getDate();
+  
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return { isToday, isTomorrow, age };
 }
 
 window.editActivist = editActivist;
